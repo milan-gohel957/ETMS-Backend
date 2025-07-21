@@ -21,4 +21,5 @@ public class Project : BaseEntity
 
     public List<Milestone> Milestones { get; set; } = [];
 
+    public ICollection<UserProjectRole>? UserProjectRoles { get; set; }
 }

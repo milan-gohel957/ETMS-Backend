@@ -21,7 +21,7 @@ public interface IGenericRepository<T> where T : BaseEntity
     IQueryable<T> QueryWithIncludes(params Expression<Func<T, object>>[] includes);
 
     // Pagination
-    Task<PaginationDTO<T>> GetPagedAsync(
+    Task<PaginationDto<T>> GetPagedAsync(
         int pageNumber,
         int pageSize,
         Expression<Func<T, bool>>? filter = null,
@@ -30,7 +30,7 @@ public interface IGenericRepository<T> where T : BaseEntity
 
     // Write operations
     Task<T> AddAsync(T entity, CancellationToken cancellationToken = default);
-    System.Threading.Tasks.Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default);
+    Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default);
     void Update(T entity);
     void UpdateRange(IEnumerable<T> entities);
     void SoftDelete(T entity);

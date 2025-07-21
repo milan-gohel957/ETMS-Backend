@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 namespace ETMS.Domain.Enums;
 
 public class Enums
@@ -19,5 +21,30 @@ public class Enums
     {
         Default = 0,
         ResponseWithData = 1
+    }
+
+    public enum RoleEnum
+    {
+        Admin = 1,
+        [Description("Program Manager")]
+        ProgramManager = 2,
+        [Description("Project Manager")]
+        ProjectManager = 3,
+        [Description("Team Lead")]
+        TeamLead = 4,
+        [Description("Senior Developer")]
+        SeniorDeveloper = 5,
+        [Description("Junior Developer")]
+        JuniorDeveloper = 6,
+    }
+
+    public static string GetEnumDescription(Enum value)
+    {
+        var field = value.GetType().GetField(value.ToString());
+        if (field == null) return string.Empty;
+
+        var attr = Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute)) as DescriptionAttribute;
+
+        return attr?.Description ?? value.ToString();
     }
 }

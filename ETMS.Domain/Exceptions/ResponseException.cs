@@ -1,6 +1,6 @@
 using static ETMS.Domain.Enums.Enums;
 
-namespace ETMS.Web.Filters;
+namespace ETMS.Domain.Exceptions;
 
 public class ResponseException(EResponse code, string message) : Exception(message)
 {

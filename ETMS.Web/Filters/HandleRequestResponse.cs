@@ -1,4 +1,5 @@
 using System.Collections;
+using ETMS.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using static ETMS.Domain.Enums.Enums;
@@ -13,6 +14,7 @@ public class HandleRequestResponse : ActionFilterAttribute
 
     /// <summary>
     /// After a resquest 
+    /// 
     /// </summary>
     /// <param name="context"></param>
     public override void OnActionExecuted(ActionExecutedContext context)
@@ -20,7 +22,7 @@ public class HandleRequestResponse : ActionFilterAttribute
         if (context.Exception is null)
         {
             object valueResult = null;
-
+    
             if (context.Result is OkObjectResult objectResult)
                 valueResult = objectResult.Value;
 

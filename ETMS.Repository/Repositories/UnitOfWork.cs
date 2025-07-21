@@ -3,17 +3,17 @@ using Microsoft.EntityFrameworkCore.Storage;
 using System.Threading.Tasks;
 using ETMS.Repository.Repositories.Interfaces;
 using ETMS.Domain.Entities;
+using ETMS.Repository.Context;
 
-namespace ETMS.Repository.Repositories.Implementations
+namespace ETMS.Repository.Repositories
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private readonly DbContext _context;
+        private readonly ApplicationDbContext _context;
         private IDbContextTransaction? _transaction;
         private readonly Dictionary<Type, object> _repositories;
         private bool _disposed;
-
-        public UnitOfWork(DbContext context)
+        public UnitOfWork(ApplicationDbContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _repositories = new Dictionary<Type, object>();
@@ -76,7 +76,7 @@ namespace ETMS.Repository.Repositories.Implementations
         /// <summary>
         /// Begin a new database transaction
         /// </summary>
-        public async  System.Threading.Tasks.Task BeginTransactionAsync(CancellationToken cancellationToken = default)
+        public async  Task BeginTransactionAsync(CancellationToken cancellationToken = default)
         {
             // Check if cancellation is requested
             cancellationToken.ThrowIfCancellationRequested();

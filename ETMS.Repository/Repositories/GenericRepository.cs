@@ -23,7 +23,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
         return entity;
     }
 
-    public async System.Threading.Tasks.Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default)
+    public async Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default)
     {
         await _dbSet.AddRangeAsync(entities);
     }
@@ -107,7 +107,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
         return await query.FirstOrDefaultAsync();
     }
 
-    public async Task<PaginationDTO<T>> GetPagedAsync(
+    public async Task<PaginationDto<T>> GetPagedAsync(
      int pageNumber,
      int pageSize,
      Expression<Func<T, bool>>? filter = null,
@@ -154,7 +154,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
             .ToListAsync();
 
         // Return paginated result
-        return new PaginationDTO<T>
+        return new PaginationDto<T>
         {
             Items = items,
             Page = pageNumber,

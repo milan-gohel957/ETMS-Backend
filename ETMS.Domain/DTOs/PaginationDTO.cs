@@ -1,6 +1,6 @@
 namespace ETMS.Domain.DTOs
 {
-    public class PaginationDTO<T>
+    public class PaginationDto<T>
     {
         public List<T> Items { get; set; } = [];
         public int Page { get; set; }

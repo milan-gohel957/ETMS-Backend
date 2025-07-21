@@ -33,5 +33,8 @@ public class User : BaseEntity
     public List<Role> UserRoles { get; set; } = [];
     public List<Comment> Comments { get; set; } = [];
     public List<ProjectTask> AssignedTasks { get; set; } = [];
-
+    public ICollection<UserProjectRole>? UserProjectRoles { get; set; }
+    public bool IsVerifiedUser { get; set; } = false;
+    public string? MagicLinkToken { get; set; }
+    public DateTime? MagicLinkTokenExpiry { get; set;}
 }
