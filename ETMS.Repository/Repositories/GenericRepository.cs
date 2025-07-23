@@ -6,6 +6,7 @@ using ETMS.Repository.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace ETMS.Repository.Repositories;
+
 public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
 {
     protected readonly ApplicationDbContext _context;
@@ -15,6 +16,11 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
     {
         _context = context;
         _dbSet = _context.Set<T>();
+    }
+
+    public IQueryable<T> GetNonDeletedQuery()
+    {
+        return _dbSet.Where(x => !x.IsDeleted);
     }
 
     public async Task<T> AddAsync(T entity, CancellationToken cancellationToken = default)
@@ -31,13 +37,13 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
     public async Task<bool> AnyAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default)
     {
         if (predicate == null) return false;
-        return await _dbSet.AnyAsync(predicate);
+        return await GetNonDeletedQuery().AnyAsync(predicate);
     }
 
     public async Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default)
     {
         if (predicate == null) return 0;
-        return await _dbSet.CountAsync(predicate);
+        return await GetNonDeletedQuery().CountAsync(predicate);
     }
 
     public void SoftDelete(T entity)
@@ -58,28 +64,28 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
 
     public Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default)
     {
-        return _dbSet.AnyAsync(e => e.Id == id && !e.IsDeleted, cancellationToken);
+        return GetNonDeletedQuery().AnyAsync(e => e.Id == id && !e.IsDeleted, cancellationToken);
     }
 
     public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        return await _dbSet.Where(e => !e.IsDeleted).Where(predicate).ToListAsync(cancellationToken);
+        return await GetNonDeletedQuery().Where(e => !e.IsDeleted).Where(predicate).ToListAsync(cancellationToken);
     }
 
     public async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        return await _dbSet.FirstOrDefaultAsync(predicate, cancellationToken);
+        return await GetNonDeletedQuery().FirstOrDefaultAsync(predicate, cancellationToken);
     }
 
-    public async Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default)
     {
-        return await _dbSet.ToListAsync(cancellationToken);
+        if (predicate == null) return await GetNonDeletedQuery().ToListAsync(cancellationToken);
+        return await GetNonDeletedQuery().Where(predicate).ToListAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<T>> GetAllWithIncludesAsync(params Expression<Func<T, object>>[] includes)
+    public async Task<IEnumerable<T>> GetAllWithIncludesAsync(Expression<Func<T, bool>>? predicate = null, params Expression<Func<T, object>>[] includes)
     {
-        var query = _dbSet.Where(e => !e.IsDeleted);
-
+        var query = predicate == null ? GetNonDeletedQuery() : GetNonDeletedQuery().Where(predicate);
         foreach (var include in includes)
         {
             query = query.Include(include);
@@ -90,14 +96,14 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
 
     public virtual async Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        return await _dbSet
+        return await GetNonDeletedQuery()
             .Where(e => e.Id == id && !e.IsDeleted)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
     public virtual async Task<T?> GetByIdWithIncludesAsync(int id, params Expression<Func<T, object>>[] includes)
     {
-        var query = _dbSet.Where(e => e.Id == id && !e.IsDeleted);
+        var query = GetNonDeletedQuery().Where(e => e.Id == id && !e.IsDeleted);
 
         foreach (var include in includes)
         {
@@ -114,7 +120,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
      Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
      params Expression<Func<T, object>>[] includes)
     {
-        IQueryable<T> query = _dbSet;
+        IQueryable<T> query = GetNonDeletedQuery();
 
         // Apply Includes
         if (includes != null)
@@ -164,12 +170,12 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
     }
     public IQueryable<T> Query()
     {
-        return _dbSet.AsQueryable();
+        return GetNonDeletedQuery().AsQueryable();
     }
 
     public IQueryable<T> QueryWithIncludes(params Expression<Func<T, object>>[] includes)
     {
-        var query = _dbSet.AsQueryable();
+        var query = GetNonDeletedQuery().AsQueryable();
         foreach (var include in includes)
         {
             query = query.Include(include);
@@ -179,9 +185,8 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
 
     public async Task<T?> SingleOrDefaultAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        return await _dbSet.SingleOrDefaultAsync(predicate, cancellationToken);
+        return await GetNonDeletedQuery().SingleOrDefaultAsync(predicate, cancellationToken);
     }
-
 
     public void Update(T entity)
     {
@@ -192,4 +197,6 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
     {
         _dbSet.UpdateRange(entities);
     }
+
+    public IQueryable<T> Table => _dbSet.AsQueryable();
 }

@@ -44,8 +44,6 @@ public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, I
         if (dbUser != null)
             throw new ResponseException(EResponse.BadRequest, "User With Same Email Or Username already exists.");
 
-        Role? adminRole = await roleRepo.FirstOrDefaultAsync(r => r.Name == RoleEnum.Admin.ToString()) ?? throw new ResponseException(EResponse.NotFound, "Admin Role Not Found");
-
         User newUser = new()
         {
             FirstName = signUpRequestDto.Firstname,
@@ -55,12 +53,25 @@ public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, I
             MagicLinkToken = randomToken,
             MagicLinkTokenExpiry = DateTime.UtcNow.AddHours(24),
             PasswordHash = HashHelper.HashPassword(signUpRequestDto.Password),
-            UserRoles = [adminRole],
             CreatedAt = DateTime.UtcNow,
         };
 
-        await userRepo.AddAsync(newUser);
+        User addedUser = await userRepo.AddAsync(newUser);
         await unitOfWork.SaveChangesAsync();
+
+        UserRole userRole = new()
+        {
+            UserId = addedUser.Id,
+            RoleId = (int)RoleEnum.Admin,
+            IsDeleted = false,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var userRoleRepo = unitOfWork.GetRepository<UserRole>();
+
+        await userRoleRepo.AddAsync(userRole);
+        await unitOfWork.SaveChangesAsync();
+
         await SendMagicLinkAsync(hostUri, randomToken, signUpRequestDto.Email);
     }
 
@@ -103,7 +114,7 @@ public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, I
 
     public async Task<string> LoginAsync(LoginRequestDto loginRequestDto)
     {
-        string email = loginRequestDto.Email; 
+        string email = loginRequestDto.Email;
         string password = loginRequestDto.Password;
 
         var userRepo = unitOfWork.GetRepository<User>();

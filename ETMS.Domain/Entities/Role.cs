@@ -8,6 +8,7 @@ public class Role : BaseEntity
     [Required(AllowEmptyStrings = false, ErrorMessage = "Name is Required.")]
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
-    public List<User> UserRoles { get; set; } = [];
     public ICollection<UserProjectRole>? UserProjectRoles { get; set; }
+
+    public virtual ICollection<UserRole> UserRoles { get; set; } = null!;
 }

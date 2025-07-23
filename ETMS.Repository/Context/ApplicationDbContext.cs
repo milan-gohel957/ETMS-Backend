@@ -2,6 +2,7 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using ETMS.Domain.Entities;
 using static ETMS.Domain.Enums.Enums;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ETMS.Repository.Context;
 
@@ -34,6 +35,20 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> dbConte
 
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
+        modelBuilder.Entity<Permission>(entity => entity.HasIndex(e => e.Name).HasDatabaseName("IX_Permissions_Name"));
+        
+        modelBuilder.Entity<UserRole>().HasKey(ur => new { ur.RoleId, ur.UserId });
+        modelBuilder.Entity<UserRole>()
+            .HasOne(ur => ur.User)
+            .WithMany(u => u.UserRoles)
+            .HasForeignKey(ur => ur.UserId);
+
+        modelBuilder.Entity<UserRole>()
+            .HasOne(ur => ur.Role)
+            .WithMany(r => r.UserRoles)
+            .HasForeignKey(ur => ur.RoleId);
+
+            
         modelBuilder.Entity<Comment>()
         .HasOne(c => c.User)
         .WithMany()
@@ -101,7 +116,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> dbConte
             new Role() { Id = 3, Name = GetEnumDescription(RoleEnum.ProjectManager), CreatedAt = DateTime.UtcNow, Description = "This is Project Manger Role." },
             new Role() { Id = 4, Name = GetEnumDescription(RoleEnum.TeamLead), CreatedAt = DateTime.UtcNow, Description = "This is Team Lead Role." },
             new Role() { Id = 5, Name = GetEnumDescription(RoleEnum.SeniorDeveloper), CreatedAt = DateTime.UtcNow, Description = "This is Senior Developer Role." },
-            new Role() { Id = 6, Name = GetEnumDescription(RoleEnum.JuniorDeveloper), CreatedAt = DateTime.UtcNow, Description = "This is Junior Developer Role." }
+            new Role() { Id = 6, Name = GetEnumDescription(RoleEnum.JuniorDeveloper), CreatedAt = DateTime.UtcNow, Description = "This is Junior Developer Role." },
+            new Role() { Id = 7, Name = GetEnumDescription(RoleEnum.User), CreatedAt = DateTime.UtcNow, Description = "This is default User Role." }
         );
 
         modelBuilder.Entity<UserProjectRole>()

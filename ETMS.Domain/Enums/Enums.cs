@@ -36,6 +36,8 @@ public class Enums
         SeniorDeveloper = 5,
         [Description("Junior Developer")]
         JuniorDeveloper = 6,
+        [Description("User")]
+        User = 7,
     }
 
     public static string GetEnumDescription(Enum value)

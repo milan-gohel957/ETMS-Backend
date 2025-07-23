@@ -41,4 +41,5 @@ public class AuthController(IAuthService authService) : ControllerBase
         await authService.MagicLoginAsync(token);
         return Ok("User Verified!");
     }
+
 }

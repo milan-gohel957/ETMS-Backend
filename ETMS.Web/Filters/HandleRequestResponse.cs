@@ -50,23 +50,17 @@ public class HandleRequestResponse : ActionFilterAttribute
     {
         string message = string.IsNullOrWhiteSpace(exceptionResponse.Message) ? string.Empty : exceptionResponse.Message;
 
-        switch (exceptionResponse.Code)
+        return exceptionResponse.Code switch
         {
-            case EResponse.Accepted:
-                return new AcceptedResult();
-            case EResponse.BadRequest:
-                return new BadRequestObjectResult(message);
-            case EResponse.Unauthorized:
-                return new UnauthorizedObjectResult(message);
-            case EResponse.Forbidden:
-                return new ForbidResult();
-            case EResponse.NotFound:
-                return new NotFoundObjectResult(message);
-            case EResponse.InternalServerError:
-                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
-        }
+            EResponse.Accepted => new AcceptedResult(),
+            EResponse.BadRequest => new BadRequestObjectResult(message),
+            EResponse.Unauthorized => new UnauthorizedObjectResult(message),
+            EResponse.Forbidden => new ForbidResult(),
+            EResponse.NotFound => new NotFoundObjectResult(message),
+            EResponse.InternalServerError => new StatusCodeResult(StatusCodes.Status500InternalServerError),
+            _ => new OkResult(),
+        };
 
-        return new OkResult();
     }
 
 

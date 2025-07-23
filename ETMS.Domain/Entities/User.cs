@@ -30,11 +30,11 @@ public class User : BaseEntity
     public bool IsEmailConfirmed { get; set; } = false;
     public string? ResetPasswordToken { get; set; }
     public DateTime? ResetPasswordTokenExpiry { get; set; }
-    public List<Role> UserRoles { get; set; } = [];
     public List<Comment> Comments { get; set; } = [];
     public List<ProjectTask> AssignedTasks { get; set; } = [];
     public ICollection<UserProjectRole>? UserProjectRoles { get; set; }
     public bool IsVerifiedUser { get; set; } = false;
     public string? MagicLinkToken { get; set; }
-    public DateTime? MagicLinkTokenExpiry { get; set;}
+    public DateTime? MagicLinkTokenExpiry { get; set; }
+    public virtual ICollection<UserRole> UserRoles { get; set; } = null!;
 }

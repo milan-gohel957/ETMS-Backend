@@ -1,9 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using ETMS.Web;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authorization;
+using ETMS.Web.Providers;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddMemoryCache();
 // Register services and dependencies
 DependencyInjection.RegisterServices(
     builder.Services,
@@ -11,6 +14,33 @@ DependencyInjection.RegisterServices(
     builder.Configuration);
 
 builder.Services.AddEndpointsApiExplorer();
+
+// builder.Services.AddAuthorization(async options =>
+// {
+//     using (var scope = builder.Services.BuildServiceProvider().CreateScope())
+//     {
+//         var permissionService = scope.ServiceProvider.GetRequiredService<IPermissionService>();
+//         var dynamicPermissions = await permissionService.GetAllPermissionsAsync(); // AVOID .Result in production code - use .Wait() or make this async if possible. This is a simplification for illustration.
+
+//         foreach (var permName in dynamicPermissions)
+//         {
+//             var httpContext = _httpContextAccessor.HttpContext;
+//             var projectId = httpContext.Request.RouteValues["projectId"]
+//                 ?? httpContext.Request.Query["projectId"];
+
+//             projectId = projectId != null ? int.Parse(projectId.ToString()) : 0;
+//             options.AddPolicy(permName, policy =>
+//             {
+//                 policy.RequireAuthenticatedUser();
+//                 policy.AddRequirements(new PermissionRequirement(permName));
+//             });
+//         }
+
+//     }
+// });
+builder.Services.AddSingleton<IAuthorizationPolicyProvider, DynamicPolicyProvider>();
+
+
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Project Management API", Version = "v1" });

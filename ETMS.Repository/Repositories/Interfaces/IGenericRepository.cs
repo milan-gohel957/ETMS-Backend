@@ -9,8 +9,9 @@ public interface IGenericRepository<T> where T : BaseEntity
     // Read operations
     Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
     Task<T?> GetByIdWithIncludesAsync(int id, params Expression<Func<T, object>>[] includes);
-    Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken = default);
-    Task<IEnumerable<T>> GetAllWithIncludesAsync(params Expression<Func<T, object>>[] includes);
+    Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default);
+
+    Task<IEnumerable<T>> GetAllWithIncludesAsync(Expression<Func<T, bool>>? predicate = null, params Expression<Func<T, object>>[] includes);
     Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default);
 
     // Query operations
@@ -39,4 +40,6 @@ public interface IGenericRepository<T> where T : BaseEntity
     // Aggregate operations
     Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default);
     Task<bool> AnyAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default);
+
+    IQueryable<T> Table { get; }
 }

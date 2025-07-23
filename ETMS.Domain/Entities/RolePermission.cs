@@ -10,6 +10,5 @@ public class RolePermission : BaseEntity
     public int PermissionId { get; set; }
     public virtual Role Role { get; set; } = new Role();
     public virtual Permission Permission { get; set; } = new();
-
-
+    
 }
