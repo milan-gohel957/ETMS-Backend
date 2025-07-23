@@ -36,7 +36,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> dbConte
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
         modelBuilder.Entity<Permission>(entity => entity.HasIndex(e => e.Name).HasDatabaseName("IX_Permissions_Name"));
-        
+
         modelBuilder.Entity<UserRole>().HasKey(ur => new { ur.RoleId, ur.UserId });
         modelBuilder.Entity<UserRole>()
             .HasOne(ur => ur.User)
@@ -48,7 +48,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> dbConte
             .WithMany(r => r.UserRoles)
             .HasForeignKey(ur => ur.RoleId);
 
-            
+
         modelBuilder.Entity<Comment>()
         .HasOne(c => c.User)
         .WithMany()
@@ -108,6 +108,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> dbConte
             .HasForeignKey(m => m.StatusId)
             .OnDelete(DeleteBehavior.Restrict); // THIS is the key!
 
+        modelBuilder.Entity<Status>().HasData(
+          new Status() { Id = 1, Name = "Pending", IsDeleted = false, CreatedAt = DateTime.UtcNow },
+          new Status() { Id = 2, Name = "Completed", IsDeleted = false, CreatedAt = DateTime.UtcNow }
+      );
 
         //Seed roles
         modelBuilder.Entity<Role>().HasData(
@@ -119,6 +123,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> dbConte
             new Role() { Id = 6, Name = GetEnumDescription(RoleEnum.JuniorDeveloper), CreatedAt = DateTime.UtcNow, Description = "This is Junior Developer Role." },
             new Role() { Id = 7, Name = GetEnumDescription(RoleEnum.User), CreatedAt = DateTime.UtcNow, Description = "This is default User Role." }
         );
+
 
         modelBuilder.Entity<UserProjectRole>()
             .HasOne(p => p.Role)

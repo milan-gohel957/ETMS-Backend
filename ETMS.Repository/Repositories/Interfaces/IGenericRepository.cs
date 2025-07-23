@@ -1,11 +1,15 @@
 using System.Linq.Expressions;
-using ETMS.Domain.DTOs;
 using ETMS.Domain.Entities;
+using ETMS.Repository.Helpers;
 
 namespace ETMS.Repository.Repositories.Interfaces;
 
 public interface IGenericRepository<T> where T : BaseEntity
 {
+    Task SoftDeleteRangeByIds(List<int> ids);
+    Task SoftDeleteByIdAsync(int id);
+
+
     // Read operations
     Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
     Task<T?> GetByIdWithIncludesAsync(int id, params Expression<Func<T, object>>[] includes);

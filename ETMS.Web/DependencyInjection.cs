@@ -1,14 +1,15 @@
 
 using System.Reflection;
 using System.Text;
-using ETMS.Domain.DTOs;
+using ETMS.Service.DTOs;
 using ETMS.Repository.Context;
-using ETMS.Repository.Helpers;
 using ETMS.Repository.Repositories;
 using ETMS.Repository.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using ETMS.Service.Mappings;
+using AutoMapper;
 
 namespace ETMS.Web;
 
@@ -24,11 +25,11 @@ public static class DependencyInjection
                 b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)
             );
         });
+
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-        services.AddScoped<TokenHelper>();
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         services.Configure<JwtSettings>(config.GetSection("Jwt"));
-
+        
         var allReferencedTypes = Assembly
             .GetAssembly(typeof(DependencyInjection))!
             .GetReferencedAssemblies()

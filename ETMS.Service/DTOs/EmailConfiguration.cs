@@ -1,5 +1,5 @@
 
-namespace ETMS.Domain.DTOs;
+namespace ETMS.Service.DTOs;
 public class EmailConfiguration
 {
     public string From { get; set; } = string.Empty;

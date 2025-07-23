@@ -23,6 +23,12 @@ public class Enums
         ResponseWithData = 1
     }
 
+    public enum StatusEnum
+    {
+        Pending = 1,
+        Completed = 2
+    }
+        
     public enum RoleEnum
     {
         Admin = 1,

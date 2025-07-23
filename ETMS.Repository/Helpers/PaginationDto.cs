@@ -1,4 +1,4 @@
-namespace ETMS.Domain.DTOs
+namespace ETMS.Repository.Helpers
 {
     public class PaginationDto<T>
     {

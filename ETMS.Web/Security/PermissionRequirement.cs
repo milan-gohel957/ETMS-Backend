@@ -1,4 +1,4 @@
-namespace ETMS.Repository.Helpers;
+namespace ETMS.Web.Security;
 using Microsoft.AspNetCore.Authorization;
 
 public class PermissionRequirement(string permission) : IAuthorizationRequirement

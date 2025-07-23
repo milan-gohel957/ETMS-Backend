@@ -1,4 +1,4 @@
-using ETMS.Domain.DTOs;
+using ETMS.Service.DTOs;
 using ETMS.Service.Services.Interfaces;
 using ETMS.Web.Filters;
 using Microsoft.AspNetCore.Authorization;
@@ -20,7 +20,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     }
 
     [HttpPost("login")]
-    [HandleRequestResponse()]
+    [HandleRequestResponse(TypeResponse = Domain.Enums.Enums.ETypeRequestResponse.ResponseWithData)]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto loginRequestDto)
     {
         string token = await authService.LoginAsync(loginRequestDto);

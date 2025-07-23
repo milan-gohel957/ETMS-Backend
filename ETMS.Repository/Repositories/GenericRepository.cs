@@ -1,13 +1,13 @@
 using System.Linq.Expressions;
-using ETMS.Domain.DTOs;
 using ETMS.Domain.Entities;
 using ETMS.Repository.Context;
+using ETMS.Repository.Helpers;
 using ETMS.Repository.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace ETMS.Repository.Repositories;
 
-public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
+public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity, new()
 {
     protected readonly ApplicationDbContext _context;
     protected readonly DbSet<T> _dbSet;
@@ -48,10 +48,44 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
 
     public void SoftDelete(T entity)
     {
+
         entity.IsDeleted = true;
         _dbSet.Update(entity);
     }
 
+
+    // This is the most efficient way to soft delete by ID
+    public Task SoftDeleteByIdAsync(int id)
+    {
+        // 1. Create a "stub" entity with only the Primary Key.
+        //    We need the 'new()' constraint on T for this to work.
+        T entityToUpdate = new() { Id = id };
+
+        // 2. Attach the stub to the DbContext. EF Core starts tracking it,
+        //    but thinks its state is 'Unchanged'.
+        _dbSet.Attach(entityToUpdate);
+
+        // 3. Now, change the property. EF Core's change tracker will see
+        //    this one property change and mark the entity as 'Modified'.
+        entityToUpdate.IsDeleted = true;
+
+        // When SaveChangesAsync() is called, EF Core will generate a targeted
+        // UPDATE statement like: "UPDATE [TableName] SET IsDeleted = 1 WHERE Id = @p0"
+        // without ever needing to SELECT the row first.
+
+        // No awaitable I/O is performed here, so we can return a completed task.
+        return Task.CompletedTask;
+    }
+    public Task SoftDeleteRangeByIds(List<int> ids)
+    {
+        for (int i = 0; i < ids.Count; i++)
+        {
+            T entityToUpdate = new() { Id = ids[i] };
+            _dbSet.Attach(entityToUpdate);
+            entityToUpdate.IsDeleted = true;
+        }
+        return Task.CompletedTask;
+    }
     public void SoftDeleteRange(IEnumerable<T> entities)
     {
         for (int i = 0; i < entities.Count(); i++)

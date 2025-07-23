@@ -1,25 +1,31 @@
-using ETMS.Domain.DTOs;
+using ETMS.Service.DTOs;
 using ETMS.Domain.Entities;
-using ETMS.Domain.Exceptions;
 using ETMS.Repository.Helpers;
 using ETMS.Repository.Repositories.Interfaces;
 using ETMS.Service.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using static ETMS.Domain.Enums.Enums;
+using ETMS.Service.Exceptions;
 
 namespace ETMS.Service.Services;
 
-public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, IConfiguration configuration, TokenHelper tokenHelper) : IAuthService
+public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, IConfiguration configuration, ITokenService tokenService) : IAuthService
 {
+    private IGenericRepository<User>? _userRepo;
+    private IGenericRepository<User> UserRepo => _userRepo ??= unitOfWork.GetRepository<User>();
+
+    private IGenericRepository<Role>? _roleRepo;
+    private IGenericRepository<Role> RoleRepo => _roleRepo ??= unitOfWork.GetRepository<Role>();
+
+    private IGenericRepository<UserRole>? _userRoleRepo;
+    private IGenericRepository<UserRole> UserRoleRepo => _userRoleRepo ??= unitOfWork.GetRepository<UserRole>();
     public async Task SignUpAsync(SignUpRequestDto signUpRequestDto, string hostUri)
     {
 
-        var userRepo = unitOfWork.GetRepository<User>();
-        var roleRepo = unitOfWork.GetRepository<Role>();
         //Check if User already exists with this email or username
 
-        User? dbUser = await userRepo.FirstOrDefaultAsync(x => !x.IsDeleted && x.Email.ToLower() == signUpRequestDto.Email.ToLower() || x.UserName.Equals(signUpRequestDto.Username));
+        User? dbUser = await UserRepo.FirstOrDefaultAsync(x => !x.IsDeleted && x.Email.ToLower() == signUpRequestDto.Email.ToLower() || x.UserName.Equals(signUpRequestDto.Username));
 
         string randomToken = GenerateRandomToken.GenerateToken();
 
@@ -56,7 +62,7 @@ public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, I
             CreatedAt = DateTime.UtcNow,
         };
 
-        User addedUser = await userRepo.AddAsync(newUser);
+        User addedUser = await UserRepo.AddAsync(newUser);
         await unitOfWork.SaveChangesAsync();
 
         UserRole userRole = new()
@@ -100,9 +106,7 @@ public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, I
 
     public async Task MagicLoginAsync(string token)
     {
-        var userRepo = unitOfWork.GetRepository<User>();
-
-        User? dbUser = await userRepo.FirstOrDefaultAsync(u => u.MagicLinkToken == token) ?? throw new ResponseException(EResponse.NotFound, "Invalid Link.");
+        User? dbUser = await UserRepo.FirstOrDefaultAsync(u => u.MagicLinkToken == token) ?? throw new ResponseException(EResponse.NotFound, "Invalid Link.");
 
         if (dbUser.MagicLinkTokenExpiry <= DateTime.UtcNow) throw new ResponseException(EResponse.BadRequest, "Token Link Expired");
 
@@ -117,8 +121,7 @@ public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, I
         string email = loginRequestDto.Email;
         string password = loginRequestDto.Password;
 
-        var userRepo = unitOfWork.GetRepository<User>();
-        var user = await userRepo.FirstOrDefaultAsync(u =>
+        var user = await UserRepo.FirstOrDefaultAsync(u =>
             u.Email.ToLower() == email.ToLower() && !u.IsDeleted);
 
         if (user == null)
@@ -131,7 +134,9 @@ public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, I
             throw new ResponseException(EResponse.BadRequest, "Invalid credentials.");
 
         // return JWT token
-        var token = tokenHelper.GenerateJwtToken(user);
+        var token = tokenService.GenerateJwtToken(user);
         return token;
     }
+
+
 }

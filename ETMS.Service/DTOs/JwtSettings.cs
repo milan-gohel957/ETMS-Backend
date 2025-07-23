@@ -1,4 +1,4 @@
-namespace ETMS.Domain.DTOs;
+namespace ETMS.Service.DTOs;
 
 public class JwtSettings
 {

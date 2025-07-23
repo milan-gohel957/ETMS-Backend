@@ -3,15 +3,25 @@ using ETMS.Web;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using ETMS.Web.Providers;
+using ETMS.Service.Mappings;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddMemoryCache();
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
 // Register services and dependencies
 DependencyInjection.RegisterServices(
     builder.Services,
     builder.Configuration.GetConnectionString("ETMS") ?? "",
     builder.Configuration);
+
+var assemblies = AppDomain.CurrentDomain.GetAssemblies()
+    .Where(a => a.FullName != null && a.FullName.StartsWith("ETMS.Domain.Entities"));
+builder.Services.AddAutoMapper(
+    typeof(ProjectProfile),
+    typeof(BoardProfile)
+);
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -39,8 +49,6 @@ builder.Services.AddEndpointsApiExplorer();
 //     }
 // });
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, DynamicPolicyProvider>();
-
-
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Project Management API", Version = "v1" });

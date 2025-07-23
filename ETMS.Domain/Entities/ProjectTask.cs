@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using static ETMS.Domain.Enums.Enums;
 
 namespace ETMS.Domain.Entities;
 
@@ -10,7 +11,7 @@ public class ProjectTask : BaseEntity
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     [ForeignKey("Status")]
-    public int StatusId { get; set; }
+    public int StatusId { get; set; } = (int)StatusEnum.Pending;
     public Status Status { get; set; } = new();
     [ForeignKey("User")]
     public int? AssignedTo { get; set; }

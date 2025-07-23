@@ -1,12 +1,13 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ETMS.Domain.Entities;
 using static ETMS.Domain.Enums.Enums;
 
-namespace ETMS.Domain.Entities;
+namespace ETMS.Service.DTOs;
 
-public class Project : BaseEntity
+public class ProjectDto
 {
-
+    public int Id { get; set; }
     [Required(AllowEmptyStrings = false, ErrorMessage = "Project Name is Required.")]
     [RegularExpression(@"\S+", ErrorMessage = "Project Name cannot be empty or whitespace.")]
     public string Name { get; set; } = string.Empty;
@@ -15,12 +16,5 @@ public class Project : BaseEntity
     public DateTime EndDate { get; set; }
     [ForeignKey("Status")]
     public int StatusId { get; set; } = (int)StatusEnum.Pending;
-    public Status Status { get; set; } = new();
-
-    public List<Comment> Comments { get; set; } = [];
-    public List<Attachment> Attachments { get; set; } = [];
-
-    public List<Milestone> Milestones { get; set; } = [];
-
-    public ICollection<UserProjectRole>? UserProjectRoles { get; set; }
+    public Status Status { get; set; } = null!;
 }

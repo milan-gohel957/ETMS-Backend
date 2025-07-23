@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace ETMS.Domain.DTOs;
+namespace ETMS.Service.DTOs;
 
 public class LoginRequestDto
 {

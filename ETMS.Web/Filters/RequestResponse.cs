@@ -1,5 +1,5 @@
 
-using ETMS.Domain.Exceptions;
+using ETMS.Service.Exceptions;
 using static ETMS.Domain.Enums.Enums;
 
 namespace ETMS.Web.Filters;

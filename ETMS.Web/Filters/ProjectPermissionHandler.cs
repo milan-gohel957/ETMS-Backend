@@ -1,6 +1,6 @@
 using System.Security.Claims;
-using ETMS.Repository.Helpers;
 using ETMS.Service.Services.Interfaces;
+using ETMS.Web.Security;
 using Microsoft.AspNetCore.Authorization;
 
 namespace ETMS.Web.Filters;

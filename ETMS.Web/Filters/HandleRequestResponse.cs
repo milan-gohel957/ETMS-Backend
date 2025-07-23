@@ -1,5 +1,5 @@
 using System.Collections;
-using ETMS.Domain.Exceptions;
+using ETMS.Service.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using static ETMS.Domain.Enums.Enums;
