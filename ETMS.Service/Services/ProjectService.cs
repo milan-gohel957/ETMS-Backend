@@ -23,14 +23,25 @@ public class ProjectService(IUnitOfWork unitOfWork, IMapper mapper) : IProjectSe
         return mapper.Map<IEnumerable<ProjectDto>>((await UserProjectRoleRepo.GetAllWithIncludesAsync(upr => upr.UserId == userId, upr => upr.Project)).Select(p => p.Project));
     }
 
-    public async Task<ProjectDto?> GetProjectById(int projectId)
+    public async Task<ProjectDto?> GetProjectByIdAsync(int projectId)
     {
-        return mapper.Map<ProjectDto>(await ProjectRepo.FirstOrDefaultAsync(p => p.Id == projectId));
+        Project? project = await ProjectRepo.FirstOrDefaultAsync(p => p.Id == projectId);
+
+        if (project == null) throw new ResponseException(EResponse.NotFound, "Project Not Found");
+
+        return mapper.Map<ProjectDto>(project);
     }
 
     public async Task DeleteProjectAsync(int projectId)
     {
+        bool isProjectExists = await ProjectRepo.ExistsAsync(projectId);
+        if (!isProjectExists) throw new ResponseException(EResponse.NotFound, "Project Not Found");
+
         await ProjectRepo.SoftDeleteByIdAsync(projectId);
+
+        IEnumerable<UserProjectRole> userProjectRoles = await UserProjectRoleRepo.GetAllAsync(upr => upr.ProjectId == projectId);
+        UserProjectRoleRepo.SoftDeleteRange(userProjectRoles);
+
         await unitOfWork.SaveChangesAsync();
     }
 
@@ -44,7 +55,7 @@ public class ProjectService(IUnitOfWork unitOfWork, IMapper mapper) : IProjectSe
         await unitOfWork.SaveChangesAsync();
     }
 
-    public async Task CreateProject(CreateProjectDto projectDto)
+    public async Task<ProjectDto> CreateProjectAsync(CreateProjectDto projectDto)
     {
         Project addedProject = await ProjectRepo.AddAsync(mapper.Map<Project>(projectDto));
         await unitOfWork.SaveChangesAsync();
@@ -57,5 +68,6 @@ public class ProjectService(IUnitOfWork unitOfWork, IMapper mapper) : IProjectSe
                 RoleId = (int)RoleEnum.Admin
             });
         await unitOfWork.SaveChangesAsync();
+        return mapper.Map<ProjectDto>(addedProject);
     }
 }

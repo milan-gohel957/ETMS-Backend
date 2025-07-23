@@ -7,9 +7,9 @@ public interface IProjectService
 {
     Task<IEnumerable<ProjectDto>> GetUserProjectsAsync(int userId);
 
-    Task<ProjectDto?> GetProjectById(int projectId);
+    Task<ProjectDto?> GetProjectByIdAsync(int projectId);
     Task DeleteProjectAsync(int projectId);
-    Task CreateProject(CreateProjectDto projectDto);
+    Task<ProjectDto> CreateProjectAsync(CreateProjectDto projectDto);
 
     Task UpdateProjectAsync(int id,UpdateProjectDto projectDto);
 }

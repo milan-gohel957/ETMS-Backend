@@ -8,12 +8,12 @@ namespace ETMS.Service.Services;
 
 public class PermissionService(IUnitOfWork unitOfWork, IMemoryCache memoryCache) : IPermissionService
 {
-    public async Task<Permission?> GetPermissionByName(string permissionName)
+    public async Task<Permission?> GetPermissionByNameAsync(string permissionName)
     {
         return await unitOfWork.GetRepository<Permission>().FirstOrDefaultAsync(x => x.Name == permissionName);
     }
 
-    public async Task<bool> UserHasPermission(int userId, string permission)
+    public async Task<bool> UserHasPermissionAsync(int userId, string permission)
     {
         var rolePermissionRepo = unitOfWork.GetRepository<RolePermission>();
 
@@ -25,7 +25,7 @@ public class PermissionService(IUnitOfWork unitOfWork, IMemoryCache memoryCache)
         return hasPermission;
     }
 
-    public async Task<List<string>> GetUserPermissions(int userId)
+    public async Task<List<string>> GetUserPermissionsAsync(int userId)
     {
         var rolePermissionRepo = unitOfWork.GetRepository<RolePermission>();
         var roleRepo = unitOfWork.GetRepository<Role>();

@@ -60,7 +60,6 @@ public class HandleRequestResponse : ActionFilterAttribute
             EResponse.InternalServerError => new StatusCodeResult(StatusCodes.Status500InternalServerError),
             _ => new OkResult(),
         };
-
     }
 
 

@@ -3,6 +3,7 @@ using ETMS.Service.DTOs;
 using ETMS.Service.Services.Interfaces;
 using ETMS.Web.Filters;
 using Microsoft.AspNetCore.Mvc;
+using static ETMS.Domain.Enums.Enums;
 
 namespace ETMS.Web.Controllers;
 
@@ -10,12 +11,11 @@ namespace ETMS.Web.Controllers;
 [Route("api/[controller]")]
 public class BoardController(IBoardService boardService) : ControllerBase
 {
-    [HttpGet("{projectId}")]
-    [HandleRequestResponse(TypeResponse = Domain.Enums.Enums.ETypeRequestResponse.ResponseWithData)]
-
-    public async Task<IActionResult> GetBoardsByProjectId(int projectId)
+    [HttpGet("by-project/{projectId:int}")]
+    [HandleRequestResponse(TypeResponse = ETypeRequestResponse.ResponseWithData)]
+    public async Task<ActionResult<IEnumerable<BoardDto>>> GetBoardsByProjectId(int projectId)
     {
-        IEnumerable<Board> boards = await boardService.GetBoardsByProjectId(projectId);
+        IEnumerable<BoardDto> boards = await boardService.GetBoardsByProjectIdAsync(projectId);
         return Ok(boards);
     }
 
@@ -23,23 +23,34 @@ public class BoardController(IBoardService boardService) : ControllerBase
     [HandleRequestResponse]
     public async Task<IActionResult> CreateBoard(CreateBoardDto createBoardDto)
     {
-        await boardService.CreateBoard(createBoardDto);
-        return Ok("Board Created.");
+        BoardDto createdBoardDto = await boardService.CreateBoardAsync(createBoardDto);
+        return CreatedAtAction(
+            nameof(GetBoardById),
+            new { id = createdBoardDto.Id },
+            createdBoardDto
+        );
+    }
 
-    }
-    [HttpPut("{boardId}")]
-    [HandleRequestResponse]
-    public async Task<IActionResult> UpdateBoard(int boardId, UpdateBoardDto updateBoardDto)
+    [HttpGet("{id}")]
+    [HandleRequestResponse(TypeResponse = ETypeRequestResponse.ResponseWithData)]
+    public async Task<ActionResult<BoardDto>> GetBoardById(int id)
     {
-        await boardService.UpdateBoard(boardId, updateBoardDto);
-        return Ok("Board Updated!");
+        return Ok(await boardService.GetBoardByIdAsync(id));
     }
-    [HttpDelete("{boardId}")]
+
+    [HttpPut("{id:int}")]
     [HandleRequestResponse]
-    public async Task<IActionResult> DeleteBoard(int boardId)
+    public async Task<IActionResult> UpdateBoard(int id, UpdateBoardDto updateBoardDto)
     {
-        await boardService.DeleteBoard(boardId);
-        return Ok("Board Deleted!");
+        await boardService.UpdateBoardAsync(id, updateBoardDto);
+        return NoContent();
+    }
+    [HttpDelete("{id:int}")]
+    [HandleRequestResponse]
+    public async Task<IActionResult> DeleteBoard(int id)
+    {
+        await boardService.DeleteBoardAsync(id);
+        return NoContent();
     }
 
 }

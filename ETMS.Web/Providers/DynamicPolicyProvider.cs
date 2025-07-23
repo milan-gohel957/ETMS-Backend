@@ -32,7 +32,7 @@ public class DynamicPolicyProvider(IServiceProvider serviceProvider, IOptions<Au
         }
         using var scope = serviceProvider.CreateScope();
         IPermissionService? permissionService = scope.ServiceProvider.GetService<IPermissionService>();
-        Permission? dbPermission = permissionService != null ? await permissionService.GetPermissionByName(policyName) : null;
+        Permission? dbPermission = permissionService != null ? await permissionService.GetPermissionByNameAsync(policyName) : null;
 
         if (dbPermission != null)
         {

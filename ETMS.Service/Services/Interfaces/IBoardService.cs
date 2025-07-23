@@ -5,10 +5,10 @@ namespace ETMS.Service.Services.Interfaces;
 
 public interface IBoardService
 {
-    Task<BoardDto> GetBoardById(int boardId);
-    Task<IEnumerable<Board>> GetBoardsByProjectId(int projectId);
-    Task CreateBoard(CreateBoardDto board);
-    Task UpdateBoard(int boardId, UpdateBoardDto updateBoardDto);
-    Task DeleteBoard(int boardId);
+    Task<BoardDto> GetBoardByIdAsync(int boardId);
+    Task<IEnumerable<BoardDto>> GetBoardsByProjectIdAsync(int projectId);
+    Task<BoardDto> CreateBoardAsync(CreateBoardDto board);
+    Task UpdateBoardAsync(int boardId, UpdateBoardDto updateBoardDto);
+    Task DeleteBoardAsync(int boardId);
 
 }

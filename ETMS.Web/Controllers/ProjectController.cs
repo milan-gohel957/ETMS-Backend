@@ -1,7 +1,10 @@
 using System.Security.Claims;
+using ETMS.Domain.Entities;
 using ETMS.Service.DTOs;
 using ETMS.Service.Services.Interfaces;
+using ETMS.Web.Filters;
 using Microsoft.AspNetCore.Mvc;
+using static ETMS.Domain.Enums.Enums;
 
 namespace ETMS.Web.Controllers;
 
@@ -9,8 +12,9 @@ namespace ETMS.Web.Controllers;
 [Route("api/[controller]")]
 public class ProjectController(IProjectService projectService) : ControllerBase
 {
-    [HttpGet("my-projects")]
-    public async Task<IActionResult> GetUserProjects()
+    [HttpGet("users/current")]
+    [HandleRequestResponse(TypeResponse = ETypeRequestResponse.ResponseWithData)]
+    public async Task<ActionResult<IEnumerable<ProjectDto>>> GetCurrentUserProjects()
     {
         var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (!int.TryParse(userIdString, out var userId))
@@ -19,41 +23,53 @@ public class ProjectController(IProjectService projectService) : ControllerBase
         }
 
         IEnumerable<ProjectDto> projects = await projectService.GetUserProjectsAsync(userId);
-
         return Ok(projects);
     }
 
-    [HttpDelete("")]
-    public async Task<IActionResult> DeleteProject([FromQuery] int projectId)
+    [HttpDelete("{id}")]
+    [HandleRequestResponse]
+
+    public async Task<IActionResult> DeleteProject(int id)
     {
-        await projectService.GetProjectById(projectId);
-        return Ok("Project Deleted Successfully!");
+        await projectService.DeleteProjectAsync(id);
+        return NoContent();
     }
 
     [HttpPut("{id}")]
+    [HandleRequestResponse]
     public async Task<IActionResult> UpdateProject(int id, [FromBody] UpdateProjectDto projectDto)
     {
         await projectService.UpdateProjectAsync(id, projectDto); // Pass the id explicitly!
-        return Ok("Project Updated Successfully!");
+        return NoContent();
     }
 
     [HttpPost]
+    [HandleRequestResponse]
     public async Task<IActionResult> CreateProject(CreateProjectDto createProjectDto)
     {
-        var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (!int.TryParse(userIdString, out var userId))
-        {
-            return Unauthorized("Invalid user identifier.");
-        }
-        createProjectDto.CreatedByUserId = userId;
-        await projectService.CreateProject(createProjectDto);
-        return Ok("Project Created Successfully!");
+        createProjectDto.CreatedByUserId = GetCurrentUserId();
+
+        ProjectDto createdProjectDto = await projectService.CreateProjectAsync(createProjectDto);
+        return CreatedAtAction(nameof(GetProjectById), new { id = createdProjectDto.Id }, createdProjectDto);
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetProjectById(int id)
+    [HandleRequestResponse(TypeResponse = ETypeRequestResponse.ResponseWithData)]
+    public async Task<ActionResult<Project>> GetProjectById(int id)
     {
-        var result = await projectService.GetProjectById(id);
+        var result = await projectService.GetProjectByIdAsync(id);
         return Ok(result);
+    }
+    
+    private int GetCurrentUserId()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+        {
+            throw new UnauthorizedAccessException("Invalid user identifier");
+        }
+
+        return userId;
     }
 }
