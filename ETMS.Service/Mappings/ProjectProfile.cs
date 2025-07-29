@@ -3,9 +3,9 @@ namespace ETMS.Service.Mappings;
 using AutoMapper;
 using ETMS.Domain.Entities;
 using ETMS.Service.DTOs;
+using ETMS.Service.Mappings.Interfaces;
 
-
-public class ProjectProfile : Profile
+public class ProjectProfile : Profile, IAutoMapperProfile
 {
     public ProjectProfile()
     {

@@ -4,6 +4,7 @@ using ETMS.Repository.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ETMS.Repository.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250725114601_AddUserRefreshToken")]
+    partial class AddUserRefreshToken
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -163,54 +166,6 @@ namespace ETMS.Repository.Migrations
                     b.HasIndex("UpdatedByUserId");
 
                     b.ToTable("AuditLogs");
-                });
-
-            modelBuilder.Entity("ETMS.Domain.Entities.Board", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ColorCode")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("CreatedByUserId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ProjectId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("UpdatedByUserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedByUserId");
-
-                    b.HasIndex("ProjectId");
-
-                    b.HasIndex("UpdatedByUserId");
-
-                    b.ToTable("Boards");
                 });
 
             modelBuilder.Entity("ETMS.Domain.Entities.Comment", b =>
@@ -490,9 +445,6 @@ namespace ETMS.Repository.Migrations
                     b.Property<int?>("AssignedTo")
                         .HasColumnType("int");
 
-                    b.Property<int>("BoardId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -521,8 +473,6 @@ namespace ETMS.Repository.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AssignedTo");
-
-                    b.HasIndex("BoardId");
 
                     b.HasIndex("CreatedByUserId");
 
@@ -607,7 +557,7 @@ namespace ETMS.Repository.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 7, 29, 12, 4, 36, 563, DateTimeKind.Utc).AddTicks(6734),
+                            CreatedAt = new DateTime(2025, 7, 25, 11, 45, 59, 176, DateTimeKind.Utc).AddTicks(5051),
                             Description = "This is Admin Role. It will have all the permissions.",
                             IsDeleted = false,
                             Name = "Admin"
@@ -615,7 +565,7 @@ namespace ETMS.Repository.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 7, 29, 12, 4, 36, 563, DateTimeKind.Utc).AddTicks(6861),
+                            CreatedAt = new DateTime(2025, 7, 25, 11, 45, 59, 176, DateTimeKind.Utc).AddTicks(5181),
                             Description = "This is Program Manger Role.",
                             IsDeleted = false,
                             Name = "Program Manager"
@@ -623,7 +573,7 @@ namespace ETMS.Repository.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2025, 7, 29, 12, 4, 36, 563, DateTimeKind.Utc).AddTicks(6889),
+                            CreatedAt = new DateTime(2025, 7, 25, 11, 45, 59, 176, DateTimeKind.Utc).AddTicks(5212),
                             Description = "This is Project Manger Role.",
                             IsDeleted = false,
                             Name = "Project Manager"
@@ -631,7 +581,7 @@ namespace ETMS.Repository.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2025, 7, 29, 12, 4, 36, 563, DateTimeKind.Utc).AddTicks(6914),
+                            CreatedAt = new DateTime(2025, 7, 25, 11, 45, 59, 176, DateTimeKind.Utc).AddTicks(5239),
                             Description = "This is Team Lead Role.",
                             IsDeleted = false,
                             Name = "Team Lead"
@@ -639,7 +589,7 @@ namespace ETMS.Repository.Migrations
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(2025, 7, 29, 12, 4, 36, 563, DateTimeKind.Utc).AddTicks(6936),
+                            CreatedAt = new DateTime(2025, 7, 25, 11, 45, 59, 176, DateTimeKind.Utc).AddTicks(5328),
                             Description = "This is Senior Developer Role.",
                             IsDeleted = false,
                             Name = "Senior Developer"
@@ -647,7 +597,7 @@ namespace ETMS.Repository.Migrations
                         new
                         {
                             Id = 6,
-                            CreatedAt = new DateTime(2025, 7, 29, 12, 4, 36, 563, DateTimeKind.Utc).AddTicks(6957),
+                            CreatedAt = new DateTime(2025, 7, 25, 11, 45, 59, 176, DateTimeKind.Utc).AddTicks(5357),
                             Description = "This is Junior Developer Role.",
                             IsDeleted = false,
                             Name = "Junior Developer"
@@ -655,7 +605,7 @@ namespace ETMS.Repository.Migrations
                         new
                         {
                             Id = 7,
-                            CreatedAt = new DateTime(2025, 7, 29, 12, 4, 36, 563, DateTimeKind.Utc).AddTicks(6980),
+                            CreatedAt = new DateTime(2025, 7, 25, 11, 45, 59, 176, DateTimeKind.Utc).AddTicks(5380),
                             Description = "This is default User Role.",
                             IsDeleted = false,
                             Name = "User"
@@ -751,7 +701,7 @@ namespace ETMS.Repository.Migrations
                         {
                             Id = 1,
                             ColorCode = "",
-                            CreatedAt = new DateTime(2025, 7, 29, 12, 4, 36, 563, DateTimeKind.Utc).AddTicks(6227),
+                            CreatedAt = new DateTime(2025, 7, 25, 11, 45, 59, 176, DateTimeKind.Utc).AddTicks(4745),
                             IsDeleted = false,
                             Name = "Pending"
                         },
@@ -759,7 +709,7 @@ namespace ETMS.Repository.Migrations
                         {
                             Id = 2,
                             ColorCode = "",
-                            CreatedAt = new DateTime(2025, 7, 29, 12, 4, 36, 563, DateTimeKind.Utc).AddTicks(6330),
+                            CreatedAt = new DateTime(2025, 7, 25, 11, 45, 59, 176, DateTimeKind.Utc).AddTicks(4750),
                             IsDeleted = false,
                             Name = "Completed"
                         });
@@ -883,47 +833,6 @@ namespace ETMS.Repository.Migrations
                     b.ToTable("UserProjectRole");
                 });
 
-            modelBuilder.Entity("ETMS.Domain.Entities.UserRefreshToken", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Guid")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("IpAddress")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsBlocked")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsExpired")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("UserRefreshTokens");
-                });
-
             modelBuilder.Entity("ETMS.Domain.Entities.UserRole", b =>
                 {
                     b.Property<int>("RoleId")
@@ -949,33 +858,6 @@ namespace ETMS.Repository.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("UserRole");
-                });
-
-            modelBuilder.Entity("ETMS.Domain.Entities.UserTask", b =>
-                {
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProjectTaskId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("UserId", "ProjectTaskId");
-
-                    b.HasIndex("ProjectTaskId");
-
-                    b.ToTable("UserTask");
                 });
 
             modelBuilder.Entity("ETMS.Domain.Entities.Attachment", b =>
@@ -1024,29 +906,6 @@ namespace ETMS.Repository.Migrations
                         .HasForeignKey("UpdatedByUserId");
 
                     b.Navigation("CreatedByUser");
-
-                    b.Navigation("UpdatedByUser");
-                });
-
-            modelBuilder.Entity("ETMS.Domain.Entities.Board", b =>
-                {
-                    b.HasOne("ETMS.Domain.Entities.User", "CreatedByUser")
-                        .WithMany()
-                        .HasForeignKey("CreatedByUserId");
-
-                    b.HasOne("ETMS.Domain.Entities.Project", "Project")
-                        .WithMany()
-                        .HasForeignKey("ProjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ETMS.Domain.Entities.User", "UpdatedByUser")
-                        .WithMany()
-                        .HasForeignKey("UpdatedByUserId");
-
-                    b.Navigation("CreatedByUser");
-
-                    b.Navigation("Project");
 
                     b.Navigation("UpdatedByUser");
                 });
@@ -1194,12 +1053,6 @@ namespace ETMS.Repository.Migrations
                         .WithMany("AssignedTasks")
                         .HasForeignKey("AssignedTo");
 
-                    b.HasOne("ETMS.Domain.Entities.Board", "Board")
-                        .WithMany()
-                        .HasForeignKey("BoardId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("ETMS.Domain.Entities.User", "CreatedByUser")
                         .WithMany()
                         .HasForeignKey("CreatedByUserId")
@@ -1215,8 +1068,6 @@ namespace ETMS.Repository.Migrations
                         .WithMany()
                         .HasForeignKey("UpdatedByUserId")
                         .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Board");
 
                     b.Navigation("CreatedByUser");
 
@@ -1355,25 +1206,6 @@ namespace ETMS.Repository.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ETMS.Domain.Entities.UserTask", b =>
-                {
-                    b.HasOne("ETMS.Domain.Entities.ProjectTask", "ProjectTask")
-                        .WithMany("UserTasks")
-                        .HasForeignKey("ProjectTaskId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("ETMS.Domain.Entities.User", "User")
-                        .WithMany("UserTasks")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("ProjectTask");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("ETMS.Domain.Entities.Project", b =>
                 {
                     b.Navigation("Attachments");
@@ -1390,8 +1222,6 @@ namespace ETMS.Repository.Migrations
                     b.Navigation("Attachments");
 
                     b.Navigation("Comments");
-
-                    b.Navigation("UserTasks");
                 });
 
             modelBuilder.Entity("ETMS.Domain.Entities.Role", b =>
@@ -1410,8 +1240,6 @@ namespace ETMS.Repository.Migrations
                     b.Navigation("UserProjectRoles");
 
                     b.Navigation("UserRoles");
-
-                    b.Navigation("UserTasks");
                 });
 #pragma warning restore 612, 618
         }

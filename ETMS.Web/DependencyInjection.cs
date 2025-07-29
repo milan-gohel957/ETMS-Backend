@@ -8,8 +8,6 @@ using ETMS.Repository.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using ETMS.Service.Mappings;
-using AutoMapper;
 
 namespace ETMS.Web;
 
@@ -68,6 +66,7 @@ public static class DependencyInjection
                     ValidateIssuerSigningKey = true,
                     ValidateIssuer = true,
                     ValidateAudience = true,
+                    ValidateLifetime = true
                 };
             });
     }

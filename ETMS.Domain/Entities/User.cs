@@ -1,11 +1,9 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ETMS.Domain.Entities;
 
 public class User : BaseEntity
 {
-
     [Required, MaxLength(50)]
     public string FirstName { get; set; } = string.Empty;
 
@@ -37,4 +35,5 @@ public class User : BaseEntity
     public string? MagicLinkToken { get; set; }
     public DateTime? MagicLinkTokenExpiry { get; set; }
     public virtual ICollection<UserRole> UserRoles { get; set; } = null!;
+    public List<UserTask> UserTasks { get; set; } = [];
 }

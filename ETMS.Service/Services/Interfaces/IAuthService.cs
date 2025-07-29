@@ -6,5 +6,7 @@ public interface IAuthService
 {
     Task SignUpAsync(SignUpRequestDto signUpRequestDto, string hostUri);
     Task MagicLoginAsync(string token);
-    Task<string> LoginAsync(LoginRequestDto loginRequestDto);
+    Task<LoginResponseDto> LoginAsync(LoginRequestDto loginRequestDto);
+    Task<LoginResponseDto> RefreshTokenAsync(string refreshToken, string? ipAddress);
+    Task<CurrentUserDto> GetCurrentUserDtoAsync(int userId);
 }

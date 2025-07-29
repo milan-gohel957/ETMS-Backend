@@ -7,10 +7,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using static ETMS.Domain.Enums.Enums;
 using ETMS.Service.Exceptions;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
+using AutoMapper;
 
 namespace ETMS.Service.Services;
 
-public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, IConfiguration configuration, ITokenService tokenService) : IAuthService
+public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, IConfiguration configuration, ITokenService tokenService, IMapper mapper) : IAuthService
 {
     private IGenericRepository<User>? _userRepo;
     private IGenericRepository<User> UserRepo => _userRepo ??= unitOfWork.GetRepository<User>();
@@ -20,6 +23,8 @@ public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, I
 
     private IGenericRepository<UserRole>? _userRoleRepo;
     private IGenericRepository<UserRole> UserRoleRepo => _userRoleRepo ??= unitOfWork.GetRepository<UserRole>();
+
+    private IGenericRepository<UserRefreshToken> UserRefreshTokenRepo = unitOfWork.GetRepository<UserRefreshToken>();
     public async Task SignUpAsync(SignUpRequestDto signUpRequestDto, string hostUri)
     {
 
@@ -47,8 +52,6 @@ public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, I
             throw new ResponseException(EResponse.BadRequest, "Verification Pending. Please check your email.");
         }
 
-        if (dbUser != null)
-            throw new ResponseException(EResponse.BadRequest, "User With Same Email Or Username already exists.");
 
         User newUser = new()
         {
@@ -116,7 +119,7 @@ public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, I
         await unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<string> LoginAsync(LoginRequestDto loginRequestDto)
+    public async Task<LoginResponseDto> LoginAsync(LoginRequestDto loginRequestDto)
     {
         string email = loginRequestDto.Email;
         string password = loginRequestDto.Password;
@@ -133,10 +136,80 @@ public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, I
         if (!HashHelper.VerifyPassword(user.PasswordHash, password))
             throw new ResponseException(EResponse.BadRequest, "Invalid credentials.");
 
-        // return JWT token
-        var token = tokenService.GenerateJwtToken(user);
-        return token;
+        var (accessToken, accessExpiresAt) = tokenService.GenerateAccessToken(user);
+        var (refreshToken, refreshExpiresAt, guid) = tokenService.GenerateRefreshToken();
+
+        await UserRefreshTokenRepo.AddAsync(new UserRefreshToken()
+        {
+            ExpiresAt = refreshExpiresAt,
+            Guid = guid,
+            CreatedAt = DateTime.UtcNow,
+            IpAddress = loginRequestDto.UserHostAddress,
+            IsBlocked = false,
+            IsExpired = false,
+            UserId = user.Id
+        });
+
+        await unitOfWork.SaveChangesAsync();
+        return new LoginResponseDto()
+        {
+            AccessToken = accessToken,
+            AccessExpiresAt = accessExpiresAt,
+            RefreshToken = refreshToken,
+            RefreshTokenExpiresAt = refreshExpiresAt,
+        };
     }
 
+    public async Task<CurrentUserDto> GetCurrentUserDtoAsync(int userId)
+    {
+        User? dbUser = await UserRepo.GetByIdAsync(userId);
+
+        if (dbUser == null) throw new ResponseException(EResponse.BadRequest, "Invalid Token.");
+
+        return mapper.Map<CurrentUserDto>(dbUser);
+    }
+
+    public async Task<LoginResponseDto> RefreshTokenAsync(string refreshToken, string? ipAddress)
+    {
+        ClaimsPrincipal claimsPrincipal = tokenService.ValidateAndDecodeToken(refreshToken);
+
+        string? guid = claimsPrincipal.FindFirst(JwtRegisteredClaimNames.Jti)?.Value.ToString();
+
+        if (string.IsNullOrEmpty(guid))
+            throw new ResponseException(EResponse.Unauthorized, "Invalid Token.");
+
+        UserRefreshToken? userRefreshToken = await UserRefreshTokenRepo.FirstOrDefaultAsync(x => x.Guid == guid);
+
+        if (userRefreshToken == null)
+            throw new ResponseException(EResponse.Unauthorized, "Invalid Token.");
+
+        User? dbUser = await UserRepo.FirstOrDefaultAsync(x => x.Id == userRefreshToken.UserId);
+        if (dbUser == null)
+            throw new ResponseException(EResponse.Unauthorized, "Invalid Token.");
+
+        var (newAccessToken, newAccessExpiresAt) = tokenService.GenerateAccessToken(dbUser);
+        var (newRefreshToken, newRefreshExpiresAt, newGuid) = tokenService.GenerateRefreshToken();
+
+        UserRefreshTokenRepo.Update(new()
+        {
+            ExpiresAt = newRefreshExpiresAt,
+            Guid = newGuid,
+            CreatedAt = DateTime.UtcNow,
+            IpAddress = ipAddress,
+            IsBlocked = false,
+            IsExpired = false,
+            UserId = dbUser.Id
+        });
+
+        await unitOfWork.SaveChangesAsync();
+
+        return new()
+        {
+            AccessExpiresAt = newAccessExpiresAt,
+            RefreshToken = newRefreshToken,
+            RefreshTokenExpiresAt = newRefreshExpiresAt,
+            AccessToken = newAccessToken
+        };
+    }
 
 }

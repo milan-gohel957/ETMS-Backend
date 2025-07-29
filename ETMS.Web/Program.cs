@@ -3,7 +3,7 @@ using ETMS.Web;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using ETMS.Web.Providers;
-using ETMS.Service.Mappings;
+using ETMS.Service.Mappings.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,38 +16,26 @@ DependencyInjection.RegisterServices(
     builder.Configuration.GetConnectionString("ETMS") ?? "",
     builder.Configuration);
 
-var assemblies = AppDomain.CurrentDomain.GetAssemblies()
-    .Where(a => a.FullName != null && a.FullName.StartsWith("ETMS.Domain.Entities"));
+
 builder.Services.AddAutoMapper(
-    typeof(ProjectProfile),
-    typeof(BoardProfile)
+    typeof(IAutoMapperProfile).Assembly
 );
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin",
+        builder =>
+        {
+            builder.WithOrigins("https://localhost:4200", "http://localhost:4200")
+                   .AllowAnyHeader()
+                   .AllowAnyMethod()
+                   .AllowCredentials();
+        });
+});
 
 builder.Services.AddEndpointsApiExplorer();
 
-// builder.Services.AddAuthorization(async options =>
-// {
-//     using (var scope = builder.Services.BuildServiceProvider().CreateScope())
-//     {
-//         var permissionService = scope.ServiceProvider.GetRequiredService<IPermissionService>();
-//         var dynamicPermissions = await permissionService.GetAllPermissionsAsync(); // AVOID .Result in production code - use .Wait() or make this async if possible. This is a simplification for illustration.
 
-//         foreach (var permName in dynamicPermissions)
-//         {
-//             var httpContext = _httpContextAccessor.HttpContext;
-//             var projectId = httpContext.Request.RouteValues["projectId"]
-//                 ?? httpContext.Request.Query["projectId"];
-
-//             projectId = projectId != null ? int.Parse(projectId.ToString()) : 0;
-//             options.AddPolicy(permName, policy =>
-//             {
-//                 policy.RequireAuthenticatedUser();
-//                 policy.AddRequirements(new PermissionRequirement(permName));
-//             });
-//         }
-
-//     }
-// });
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, DynamicPolicyProvider>();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -81,10 +69,18 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+// builder.Services.AddAntiforgery(options => {
+//     options.Cookie.Name = "X-CSRF-TOKEN";
+//     options.HeaderName = "X-CSRF-TOKEN";
+//     options.Cookie.SameSite = SameSiteMode.None;
+//     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+// });
 builder.Services.AddControllers();
 
 var app = builder.Build();
+// app.UseMiddleware<CookieJwtMiddleware>();
 
+app.UseCors("AllowSpecificOrigin");
 // Middlewares
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 

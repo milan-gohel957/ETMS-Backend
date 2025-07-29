@@ -13,8 +13,13 @@ public class ProjectTask : BaseEntity
     [ForeignKey("Status")]
     public int StatusId { get; set; } = (int)StatusEnum.Pending;
     public Status Status { get; set; } = new();
+
+    public int BoardId { get; set; }
+    public Board Board { get; set; } = null!;
+
     [ForeignKey("User")]
     public int? AssignedTo { get; set; }
+    public List<UserTask> UserTasks { get; set; } = [];
     public User User { get; set; } = new();
     public List<Comment> Comments { get; set; } = [];
     public List<Attachment> Attachments { get; set; } = [];

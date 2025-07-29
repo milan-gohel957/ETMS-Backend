@@ -29,12 +29,36 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> dbConte
 
     public DbSet<ProjectTask> Tasks { get; set; }
 
+    public DbSet<Board> Boards { get; set; }
+    public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
+        modelBuilder.Entity<UserTask>()
+        .HasKey(ut => new { ut.UserId, ut.ProjectTaskId });
+
+        modelBuilder.Entity<UserTask>()
+            .HasOne(ut => ut.User)
+            .WithMany(u => u.UserTasks)
+            .HasForeignKey(ut => ut.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<UserTask>()
+            .HasOne(ut => ut.ProjectTask)
+            .WithMany(t => t.UserTasks)
+            .HasForeignKey(ut => ut.ProjectTaskId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Board>()
+            .HasOne(b => b.Project)
+            .WithMany()
+            .HasForeignKey(b => b.ProjectId)
+            .OnDelete(DeleteBehavior.Cascade);
+            
         modelBuilder.Entity<Permission>(entity => entity.HasIndex(e => e.Name).HasDatabaseName("IX_Permissions_Name"));
 
         modelBuilder.Entity<UserRole>().HasKey(ur => new { ur.RoleId, ur.UserId });

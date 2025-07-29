@@ -16,5 +16,5 @@ public class ProjectDto
     public DateTime EndDate { get; set; }
     [ForeignKey("Status")]
     public int StatusId { get; set; } = (int)StatusEnum.Pending;
-    public Status Status { get; set; } = null!;
+    public Status? Status { get; set; } = null;
 }

@@ -13,6 +13,7 @@ public class BoardService(IUnitOfWork unitOfWork, IMapper mapper) : IBoardServic
     private IGenericRepository<Board>? _boardRepository;
     private IGenericRepository<Board> BoardRepository => _boardRepository ??= unitOfWork.GetRepository<Board>();
 
+    private readonly IGenericRepository<Project> _projectRepository = unitOfWork.GetRepository<Project>();
     public async Task<BoardDto> GetBoardByIdAsync(int boardId)
     {
         var board = await BoardRepository.GetByIdAsync(boardId);
@@ -28,6 +29,9 @@ public class BoardService(IUnitOfWork unitOfWork, IMapper mapper) : IBoardServic
 
     public async Task<BoardDto> CreateBoardAsync(CreateBoardDto board)
     {
+        bool isProjectExists = await _projectRepository.ExistsAsync(board.ProjectId);
+        if (!isProjectExists) throw new ResponseException(EResponse.NotFound, "Project Not Found.");
+        
         Board dbBoard = await BoardRepository.AddAsync(mapper.Map<Board>(board));
         await unitOfWork.SaveChangesAsync();
         return mapper.Map<BoardDto>(dbBoard);
@@ -36,7 +40,7 @@ public class BoardService(IUnitOfWork unitOfWork, IMapper mapper) : IBoardServic
     public async Task DeleteBoardAsync(int boardId)
     {
         bool isBoardExists = await BoardRepository.ExistsAsync(boardId);
-        if(!isBoardExists) throw new ResponseException(EResponse.NotFound, "Board Not found");
+        if (!isBoardExists) throw new ResponseException(EResponse.NotFound, "Board Not found");
 
         await BoardRepository.SoftDeleteByIdAsync(boardId);
         await unitOfWork.SaveChangesAsync();
