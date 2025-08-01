@@ -9,7 +9,7 @@ public class Notification : BaseEntity
 
     public int UserId { get; set; }
 
-    public User User { get; set; } = new();
+    public User? User { get; set; }
 
     public string? EntityType { get; set; }
 
@@ -28,6 +28,14 @@ public class Notification : BaseEntity
     public DateTime? EmailSentAt { get; set; }
 
     public string? EmailError { get; set; }
+
+    [ForeignKey("CreatedByUser")]
+    public int? CreatedByUserId { get; set; }
+    public User? CreatedByUser { get; set; }
+
+    [ForeignKey("UpdatedByUser")]
+    public int? UpdatedByUserId { get; set; }
+    public User? UpdatedByUser { get; set; }
 
 }
 

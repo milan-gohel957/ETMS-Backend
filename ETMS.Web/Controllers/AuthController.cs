@@ -26,7 +26,7 @@ public class AuthController(IAuthService authService, IHostEnvironment hostEnvir
         return new Response<object>()
         {
             Data = null,
-            Message = "Sign Up Successful!",
+            Message = "Sign-up successful. Check your email to verify your account.",
             Errors = [],
             Succeeded = true,
             StatusCode = HttpStatusCode.OK
@@ -98,7 +98,7 @@ public class AuthController(IAuthService authService, IHostEnvironment hostEnvir
         Response.Cookies.Append("AccessToken", loginResponseDto.AccessToken, new()
         {
             Expires = loginResponseDto.AccessExpiresAt,
-            HttpOnly = true,
+            HttpOnly = !hostEnvironment.IsDevelopment(),
             Secure = !hostEnvironment.IsDevelopment(),
             SameSite = SameSiteMode.None,
         });
@@ -106,7 +106,7 @@ public class AuthController(IAuthService authService, IHostEnvironment hostEnvir
         Response.Cookies.Append("RefreshToken", loginResponseDto.RefreshToken, new()
         {
             Expires = loginResponseDto.RefreshTokenExpiresAt,
-            HttpOnly = true,
+            HttpOnly = !hostEnvironment.IsDevelopment(),
             Secure = !hostEnvironment.IsDevelopment(),
             SameSite = SameSiteMode.None
         });

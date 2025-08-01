@@ -1,11 +1,9 @@
 using System.ComponentModel.DataAnnotations;
-using ETMS.Domain.Entities;
 
 namespace ETMS.Service.DTOs;
 
-public class BoardDto
+public class BoardDto : BaseEntityDto
 {
-    public int Id { get; set; }
     [Required(ErrorMessage = "Board name is required")]
     public string Name { get; set; } = null!;
 
@@ -14,8 +12,7 @@ public class BoardDto
     public string? Description { get; set; }
 
     public int ProjectId { get; set; }
-
-    public DateTime? CreatedAt{ get; set; }
-    public DateTime? UpdatedAt{ get; set; }
+        
+    public IEnumerable<TaskDto>? Tasks{ get; set; }
 
 }

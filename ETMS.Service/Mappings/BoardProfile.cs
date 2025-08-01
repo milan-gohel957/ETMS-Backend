@@ -9,12 +9,12 @@ public class BoardProfile : Profile, IAutoMapperProfile
 {
     public BoardProfile()
     {
-        
+
         CreateMap<Board, BoardDto>();
 
-        CreateMap<CreateBoardDto, Board>().ReverseMap();
-        CreateMap<CreateBoardDto, Board>();
-        CreateMap<UpdateBoardDto, Board>().ReverseMap();
-        CreateMap<UpdateBoardDto, Board>();
+        CreateMap<CreateBoardDto, Board>()
+            .ForMember(dest => dest.Project, opt => opt.Ignore());
+        CreateMap<UpdateBoardDto, Board>()
+            .ForMember(dest => dest.Project, opt => opt.Ignore());
     }
 }

@@ -5,7 +5,6 @@ using ETMS.Domain.Entities;
 using ETMS.Service.DTOs;
 using ETMS.Service.Exceptions;
 using ETMS.Service.Services.Interfaces;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using static ETMS.Domain.Enums.Enums;

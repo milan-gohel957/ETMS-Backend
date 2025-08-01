@@ -8,19 +8,24 @@ public class Project : BaseEntity
 {
 
     [Required(AllowEmptyStrings = false, ErrorMessage = "Project Name is Required.")]
-    [RegularExpression(@"\S+", ErrorMessage = "Project Name cannot be empty or whitespace.")]
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     [ForeignKey("Status")]
     public int StatusId { get; set; } = (int)StatusEnum.Pending;
-    public Status Status { get; set; } = new();
-
+    public Status? Status { get; set; }
     public List<Comment> Comments { get; set; } = [];
     public List<Attachment> Attachments { get; set; } = [];
-
     public List<Milestone> Milestones { get; set; } = [];
-
     public ICollection<UserProjectRole>? UserProjectRoles { get; set; }
+    public List<Board> Boards { get; set; } = [];
+
+    [ForeignKey("CreatedByUser")]
+    public int? CreatedByUserId { get; set; }
+    public User? CreatedByUser { get; set; }
+
+    [ForeignKey("UpdatedByUser")]
+    public int? UpdatedByUserId { get; set; }
+    public User? UpdatedByUser { get; set; }
 }

@@ -6,13 +6,13 @@ namespace ETMS.Domain.Entities;
 public class UserProjectRole : BaseEntity
 {
     public int ProjectId { get; set; }
-    public Project Project { get; set; } = null!;
+    public Project? Project { get; set; } 
 
     public int RoleId { get; set; }
-    public Role Role { get; set; } = null!;
+    public Role? Role { get; set; } 
 
     public int UserId { get; set; }
-    public User User { get; set; } = null!;
+    public User? User { get; set; } 
 
     [NotMapped]
     [ForeignKey("CreatedByUser")]

@@ -11,6 +11,7 @@ public class User : BaseEntity
     public string LastName { get; set; } = string.Empty;
 
     [MaxLength(100)]
+    [RegularExpression(@"^[a-zA-Z0-9._-]{3,15}$", ErrorMessage = "Username must be between 3 and 15 characters long and can only contain letters, numbers, underscores (_), hyphens (-), and periods (.).")]
     public string UserName { get; set; } = null!;
 
     [Required, EmailAddress, MaxLength(100)]

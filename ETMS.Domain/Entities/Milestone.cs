@@ -1,6 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.Contracts;
 using static ETMS.Domain.Enums.Enums;
 
 namespace ETMS.Domain.Entities;
@@ -15,10 +13,11 @@ public class Milestone : BaseEntity
 
     public int ProjectId { get; set; }
 
-    public Project Project { get; set; } = null!;
+    public Project? Project { get; set; }
 
     public int StatusId { get; set; } = (int)StatusEnum.Pending;
 
-    public Status Status { get; set; } = null!;
+    public Status? Status { get; set; } 
+    
 
 }

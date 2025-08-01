@@ -49,7 +49,10 @@ public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, I
                 await SendMagicLinkAsync(hostUri, dbUser.MagicLinkToken, signUpRequestDto.Email);
                 return;
             }
-            throw new ResponseException(EResponse.BadRequest, "Verification Pending. Please check your email.");
+            if(signUpRequestDto.Email == dbUser.Email)
+                throw new ResponseException(EResponse.BadRequest, "Verification Pending. Please check your email.");
+            
+            throw new ResponseException(EResponse.BadRequest, "User With Same Email Or Username already exists.");
         }
 
 
@@ -94,7 +97,7 @@ public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, I
                 "WelcomeLoginLink.html");
         // var templatePath = Path.Combine(basePath, "ETMS.Infrastructure", "EmailTemplates", "WelcomeLoginLink.html");
         var htmlTemplate = await File.ReadAllTextAsync(templatePath);
-        var SignInLink = $"{hostUri}/magiclogin?token={randomToken}";
+        var SignInLink = $"{hostUri}/api/auth/magiclogin?token={randomToken}";
 
         htmlTemplate = htmlTemplate.Replace("{{SignInLink}}", SignInLink);
 

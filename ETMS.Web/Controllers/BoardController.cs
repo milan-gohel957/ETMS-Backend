@@ -1,11 +1,10 @@
-using System.Net; // <-- Make sure this is included
-using ETMS.Domain.Entities;
+using System.Net;
 using ETMS.Service.DTOs;
 using ETMS.Service.Services.Interfaces;
 using ETMS.Web.Filters;
 using Microsoft.AspNetCore.Mvc;
 using static ETMS.Domain.Enums.Enums;
-using ETMS.Domain.Common; // <-- Make sure this is included for Response<T>
+using ETMS.Domain.Common;
 
 namespace ETMS.Web.Controllers;
 
@@ -28,7 +27,7 @@ public class BoardController(IBoardService boardService) : ControllerBase
     }
 
     [HttpPost]
-    [HandleRequestResponse(TypeResponse = ETypeRequestResponse.ResponseWithData)] 
+    [HandleRequestResponse(TypeResponse = ETypeRequestResponse.ResponseWithData)]
     public async Task<Response<BoardDto>> CreateBoard(CreateBoardDto createBoardDto)
     {
         BoardDto createdBoardDto = await boardService.CreateBoardAsync(createBoardDto);
@@ -65,7 +64,7 @@ public class BoardController(IBoardService boardService) : ControllerBase
             Data = null,
             Message = "Board updated successfully.",
             Succeeded = true,
-            StatusCode = HttpStatusCode.OK // Or HttpStatusCode.NoContent if you prefer
+            StatusCode = HttpStatusCode.OK
         };
     }
 
@@ -79,7 +78,7 @@ public class BoardController(IBoardService boardService) : ControllerBase
             Data = null,
             Message = "Board deleted successfully.",
             Succeeded = true,
-            StatusCode = HttpStatusCode.OK // Or HttpStatusCode.NoContent
+            StatusCode = HttpStatusCode.OK
         };
     }
 }

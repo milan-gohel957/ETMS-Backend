@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 public class SignUpRequestDto
 {
     [Required]
+    [RegularExpression(@"^[a-zA-Z0-9._-]{3,15}$", ErrorMessage = "Username must be between 3 and 15 characters long and can only contain letters, numbers, underscores (_), hyphens (-), and periods (.).")]
     public string Username { get; set; } = string.Empty;
 
     [Required]

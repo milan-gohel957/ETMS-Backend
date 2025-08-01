@@ -13,7 +13,9 @@ public class ProjectProfile : Profile, IAutoMapperProfile
         CreateMap<Project, ProjectDto>();
 
         // If you had a DTO for creating a project, the mapping would be the other way.
-        CreateMap<CreateProjectDto, Project>();
-        CreateMap<UpdateProjectDto, Project>();
+        CreateMap<CreateProjectDto, Project>()
+            .ForMember(dest => dest.Status, opt => opt.Ignore());
+        CreateMap<UpdateProjectDto, Project>()
+            .ForMember(dest => dest.Status, opt => opt.Ignore());
     }
 }

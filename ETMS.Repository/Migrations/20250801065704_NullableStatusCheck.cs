@@ -3,12 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
-
 namespace ETMS.Repository.Migrations
 {
     /// <inheritdoc />
-    public partial class SeedStatus : Migration
+    public partial class NullableStatusCheck : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -18,121 +16,130 @@ namespace ETMS.Repository.Migrations
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 23, 11, 30, 4, 981, DateTimeKind.Utc).AddTicks(9951));
+                value: new DateTime(2025, 8, 1, 6, 57, 2, 235, DateTimeKind.Utc).AddTicks(1377));
 
             migrationBuilder.UpdateData(
                 table: "Roles",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 23, 11, 30, 4, 982, DateTimeKind.Utc).AddTicks(62));
+                value: new DateTime(2025, 8, 1, 6, 57, 2, 235, DateTimeKind.Utc).AddTicks(1593));
 
             migrationBuilder.UpdateData(
                 table: "Roles",
                 keyColumn: "Id",
                 keyValue: 3,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 23, 11, 30, 4, 982, DateTimeKind.Utc).AddTicks(87));
+                value: new DateTime(2025, 8, 1, 6, 57, 2, 235, DateTimeKind.Utc).AddTicks(1631));
 
             migrationBuilder.UpdateData(
                 table: "Roles",
                 keyColumn: "Id",
                 keyValue: 4,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 23, 11, 30, 4, 982, DateTimeKind.Utc).AddTicks(107));
+                value: new DateTime(2025, 8, 1, 6, 57, 2, 235, DateTimeKind.Utc).AddTicks(1657));
 
             migrationBuilder.UpdateData(
                 table: "Roles",
                 keyColumn: "Id",
                 keyValue: 5,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 23, 11, 30, 4, 982, DateTimeKind.Utc).AddTicks(126));
+                value: new DateTime(2025, 8, 1, 6, 57, 2, 235, DateTimeKind.Utc).AddTicks(1682));
 
             migrationBuilder.UpdateData(
                 table: "Roles",
                 keyColumn: "Id",
                 keyValue: 6,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 23, 11, 30, 4, 982, DateTimeKind.Utc).AddTicks(145));
+                value: new DateTime(2025, 8, 1, 6, 57, 2, 235, DateTimeKind.Utc).AddTicks(1705));
 
             migrationBuilder.UpdateData(
                 table: "Roles",
                 keyColumn: "Id",
                 keyValue: 7,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 23, 11, 30, 4, 982, DateTimeKind.Utc).AddTicks(164));
+                value: new DateTime(2025, 8, 1, 6, 57, 2, 235, DateTimeKind.Utc).AddTicks(1727));
 
-            migrationBuilder.InsertData(
+            migrationBuilder.UpdateData(
                 table: "Statuses",
-                columns: new[] { "Id", "ColorCode", "CreatedAt", "CreatedByUserId", "Description", "IsDeleted", "Name", "UpdatedAt", "UpdatedByUserId" },
-                values: new object[,]
-                {
-                    { 1, "", new DateTime(2025, 7, 23, 11, 30, 4, 981, DateTimeKind.Utc).AddTicks(9757), null, null, false, "Pending", null, null },
-                    { 2, "", new DateTime(2025, 7, 23, 11, 30, 4, 981, DateTimeKind.Utc).AddTicks(9760), null, null, false, "Completed", null, null }
-                });
+                keyColumn: "Id",
+                keyValue: 1,
+                column: "CreatedAt",
+                value: new DateTime(2025, 8, 1, 6, 57, 2, 235, DateTimeKind.Utc).AddTicks(1154));
+
+            migrationBuilder.UpdateData(
+                table: "Statuses",
+                keyColumn: "Id",
+                keyValue: 2,
+                column: "CreatedAt",
+                value: new DateTime(2025, 8, 1, 6, 57, 2, 235, DateTimeKind.Utc).AddTicks(1158));
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DeleteData(
-                table: "Statuses",
-                keyColumn: "Id",
-                keyValue: 1);
-
-            migrationBuilder.DeleteData(
-                table: "Statuses",
-                keyColumn: "Id",
-                keyValue: 2);
-
             migrationBuilder.UpdateData(
                 table: "Roles",
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 23, 7, 29, 10, 463, DateTimeKind.Utc).AddTicks(7633));
+                value: new DateTime(2025, 7, 30, 5, 41, 3, 641, DateTimeKind.Utc).AddTicks(6482));
 
             migrationBuilder.UpdateData(
                 table: "Roles",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 23, 7, 29, 10, 463, DateTimeKind.Utc).AddTicks(7761));
+                value: new DateTime(2025, 7, 30, 5, 41, 3, 641, DateTimeKind.Utc).AddTicks(6617));
 
             migrationBuilder.UpdateData(
                 table: "Roles",
                 keyColumn: "Id",
                 keyValue: 3,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 23, 7, 29, 10, 463, DateTimeKind.Utc).AddTicks(7795));
+                value: new DateTime(2025, 7, 30, 5, 41, 3, 641, DateTimeKind.Utc).AddTicks(6644));
 
             migrationBuilder.UpdateData(
                 table: "Roles",
                 keyColumn: "Id",
                 keyValue: 4,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 23, 7, 29, 10, 463, DateTimeKind.Utc).AddTicks(7821));
+                value: new DateTime(2025, 7, 30, 5, 41, 3, 641, DateTimeKind.Utc).AddTicks(6664));
 
             migrationBuilder.UpdateData(
                 table: "Roles",
                 keyColumn: "Id",
                 keyValue: 5,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 23, 7, 29, 10, 463, DateTimeKind.Utc).AddTicks(7856));
+                value: new DateTime(2025, 7, 30, 5, 41, 3, 641, DateTimeKind.Utc).AddTicks(6682));
 
             migrationBuilder.UpdateData(
                 table: "Roles",
                 keyColumn: "Id",
                 keyValue: 6,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 23, 7, 29, 10, 463, DateTimeKind.Utc).AddTicks(7889));
+                value: new DateTime(2025, 7, 30, 5, 41, 3, 641, DateTimeKind.Utc).AddTicks(6702));
 
             migrationBuilder.UpdateData(
                 table: "Roles",
                 keyColumn: "Id",
                 keyValue: 7,
                 column: "CreatedAt",
-                value: new DateTime(2025, 7, 23, 7, 29, 10, 463, DateTimeKind.Utc).AddTicks(7913));
+                value: new DateTime(2025, 7, 30, 5, 41, 3, 641, DateTimeKind.Utc).AddTicks(6720));
+
+            migrationBuilder.UpdateData(
+                table: "Statuses",
+                keyColumn: "Id",
+                keyValue: 1,
+                column: "CreatedAt",
+                value: new DateTime(2025, 7, 30, 5, 41, 3, 641, DateTimeKind.Utc).AddTicks(6253));
+
+            migrationBuilder.UpdateData(
+                table: "Statuses",
+                keyColumn: "Id",
+                keyValue: 2,
+                column: "CreatedAt",
+                value: new DateTime(2025, 7, 30, 5, 41, 3, 641, DateTimeKind.Utc).AddTicks(6256));
         }
     }
 }

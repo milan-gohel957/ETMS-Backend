@@ -5,9 +5,8 @@ using static ETMS.Domain.Enums.Enums;
 
 namespace ETMS.Service.DTOs;
 
-public class ProjectDto
+public class ProjectDto : BaseEntityDto
 {
-    public int Id { get; set; }
     [Required(AllowEmptyStrings = false, ErrorMessage = "Project Name is Required.")]
     [RegularExpression(@"\S+", ErrorMessage = "Project Name cannot be empty or whitespace.")]
     public string Name { get; set; } = string.Empty;
@@ -17,4 +16,5 @@ public class ProjectDto
     [ForeignKey("Status")]
     public int StatusId { get; set; } = (int)StatusEnum.Pending;
     public Status? Status { get; set; } = null;
+    public int? CreatedByUserId { get; set; }
 }

@@ -27,7 +27,7 @@ public class Attachment : BaseEntity
 
     // Who uploaded this file
     public int UploadedByUserId { get; set; }
-    public User UploadedBy { get; set; } = null!;
+    public User? UploadedBy { get; set; }
 
     // Security
     public bool IsVirusScanCompleted { get; set; } = false;
@@ -35,11 +35,9 @@ public class Attachment : BaseEntity
     public DateTime? VirusScanDate { get; set; }
 
     // Polymorphic relationships (similar to comments)
-    public int? TaskId { get; set; }
+    public int TaskId { get; set; }
     public ProjectTask? Task { get; set; }
 
-    public int? ProjectId { get; set; }
-    public Project? Project { get; set; }
 
     // Optional metadata
     [MaxLength(1000)]
@@ -47,5 +45,13 @@ public class Attachment : BaseEntity
 
     [MaxLength(32)]
     public string? MD5Hash { get; set; } // For duplicate detection
+
+    [ForeignKey("CreatedByUser")]
+    public int? CreatedByUserId { get; set; }
+    public User? CreatedByUser { get; set; }
+
+    [ForeignKey("UpdatedByUser")]
+    public int? UpdatedByUserId { get; set; }
+    public User? UpdatedByUser { get; set; }
 
 }

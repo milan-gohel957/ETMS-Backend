@@ -9,11 +9,5 @@ public class BaseEntity
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public bool IsDeleted { get; set; }
-    [ForeignKey("CreatedByUser")]
-    public int? CreatedByUserId { get; set; }
-    public User? CreatedByUser { get; set; }
-    
-    [ForeignKey("UpdatedByUser")]
-    public int? UpdatedByUserId { get; set; }
-    public User? UpdatedByUser { get; set; }
+ 
 }

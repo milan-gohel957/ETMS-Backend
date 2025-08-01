@@ -1,3 +1,4 @@
+using ETMS.Domain.Common;
 using Microsoft.AspNetCore.Http;
 using System.Net;
 using System.Text.Json;
@@ -25,25 +26,19 @@ public class GlobalExceptionHandlerMiddleware
 
     private static Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        // Default response details
-        int statusCode = (int)HttpStatusCode.InternalServerError;
-        string message = "An unexpected error occurred.";
-
-        // Optional: You can customize based on exception type
-        // if (exception is NotFoundException) { ... }
-
-        // Optionally: Log the exception, e.g. using ILogger
-
-        var response = new
+        var response = new Response<object>
         {
-            error = message,
-            // You can add more fields if needed: errorCode, stackTrace, etc
-            details = exception.Message // For development only; remove or limit for production!
+            Data = null,
+            Succeeded = false,
+            Message = "An unexpected error occurred.",
+            Errors = new[] { exception.Message },
+            StatusCode = HttpStatusCode.InternalServerError
         };
 
         context.Response.ContentType = "application/json";
-        context.Response.StatusCode = statusCode;
+        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
         var result = JsonSerializer.Serialize(response);
         return context.Response.WriteAsync(result);
     }
+
 }

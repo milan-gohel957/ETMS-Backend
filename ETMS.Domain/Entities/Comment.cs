@@ -13,5 +13,13 @@ public class Comment : BaseEntity
     public int? ProjectId { get; set; }
     public Project? Project { get; set; }
     public int UserId { get; set; }
-    public User User { get; set; } = null!;
+    public User? User { get; set; }
+
+    [ForeignKey("CreatedByUser")]
+    public int? CreatedByUserId { get; set; }
+    public User? CreatedByUser { get; set; }
+
+    [ForeignKey("UpdatedByUser")]
+    public int? UpdatedByUserId { get; set; }
+    public User? UpdatedByUser { get; set; }
 }

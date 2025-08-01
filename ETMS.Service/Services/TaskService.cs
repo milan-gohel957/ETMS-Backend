@@ -38,6 +38,8 @@ public class TaskService(IUnitOfWork unitOfWork, IMapper mapper) : ITaskService
 
     public async Task<TaskDto> CreateTaskAsync(CreateTaskDto createTaskDto)
     {
-        return mapper.Map<TaskDto>(await _taskRepository.AddAsync(mapper.Map<ProjectTask>(createTaskDto)));
+        ProjectTask addedTask = await _taskRepository.AddAsync(mapper.Map<ProjectTask>(createTaskDto));
+        await unitOfWork.SaveChangesAsync();
+        return mapper.Map<TaskDto>(addedTask);
     }
 }

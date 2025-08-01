@@ -1,3 +1,5 @@
+using ETMS.Domain.Entities;
+
 namespace ETMS.Service.DTOs;
 
 public class CreateBoardDto
@@ -10,4 +12,6 @@ public class CreateBoardDto
 
     public int ProjectId { get; set; }
 
-}
+    public int? CreatedByUserId{ get; set; }
+}   
+

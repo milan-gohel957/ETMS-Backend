@@ -10,4 +10,4 @@ public class Permission : BaseEntity
 
     public string? Description { get; set; }
 
-}
+}   

@@ -33,7 +33,7 @@ public class DynamicPolicyProvider(IServiceProvider serviceProvider, IOptions<Au
         using var scope = serviceProvider.CreateScope();
         IPermissionService? permissionService = scope.ServiceProvider.GetService<IPermissionService>();
         Permission? dbPermission = permissionService != null ? await permissionService.GetPermissionByNameAsync(policyName) : null;
-
+        //canAddUser
         if (dbPermission != null)
         {
             // Create dynamic policy

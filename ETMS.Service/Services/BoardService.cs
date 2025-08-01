@@ -23,7 +23,7 @@ public class BoardService(IUnitOfWork unitOfWork, IMapper mapper) : IBoardServic
 
     public async Task<IEnumerable<BoardDto>> GetBoardsByProjectIdAsync(int projectId)
     {
-        var boards = await BoardRepository.GetAllAsync(b => b.ProjectId == projectId);
+        var boards = await BoardRepository.GetAllWithIncludesAsync(b => b.ProjectId == projectId, b => b.Tasks);
         return mapper.Map<IEnumerable<BoardDto>>(boards);
     }
 
