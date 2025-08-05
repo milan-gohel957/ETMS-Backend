@@ -157,7 +157,7 @@ public class AuthController(IAuthService authService, IHostEnvironment hostEnvir
     }
 
     [HttpPost("magiclogin")]
-    [HandleRequestResponse]
+    [HandleRequestResponse(TypeResponse = ETypeRequestResponse.ResponseWithData)]
     public async Task<Response<object>> MagicLogin([FromQuery] string token)
     {
         await authService.MagicLoginAsync(token);

@@ -11,3 +11,4 @@ public class UpdateTaskDto
     public int StatusId { get; set; } = (int)StatusEnum.Pending;
     public int BoardId { get; set; }
 }
+    

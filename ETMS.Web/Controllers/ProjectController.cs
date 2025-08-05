@@ -1,13 +1,14 @@
-using System.Net; // <-- Make sure this is included
+using System.Net;
 using System.Security.Claims;
-using ETMS.Domain.Entities;
 using ETMS.Service.DTOs;
-using ETMS.Service.Exceptions; // <-- Make sure this is included for ResponseException
+using ETMS.Service.Exceptions;
+
 using ETMS.Service.Services.Interfaces;
 using ETMS.Web.Filters;
 using Microsoft.AspNetCore.Mvc;
 using static ETMS.Domain.Enums.Enums;
-using ETMS.Domain.Common; // <-- Make sure this is included for Response<T>
+using ETMS.Domain.Common;
+
 
 namespace ETMS.Web.Controllers;
 
