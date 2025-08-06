@@ -23,7 +23,7 @@ public class BoardService(IUnitOfWork unitOfWork, IMapper mapper) : IBoardServic
 
     public async Task<IEnumerable<BoardDto>> GetBoardsByProjectIdAsync(int projectId)
     {
-        var boards = await BoardRepository.GetAllWithIncludesAsync(b => b.ProjectId == projectId, b => b.Tasks);
+        var boards = await BoardRepository.GetAllWithIncludesAsync(b => b.ProjectId == projectId, b => b.Tasks.OrderBy(t => t.Order));
         return mapper.Map<IEnumerable<BoardDto>>(boards);
     }
 
@@ -31,7 +31,7 @@ public class BoardService(IUnitOfWork unitOfWork, IMapper mapper) : IBoardServic
     {
         bool isProjectExists = await _projectRepository.ExistsAsync(board.ProjectId);
         if (!isProjectExists) throw new ResponseException(EResponse.NotFound, "Project Not Found.");
-        
+
         Board dbBoard = await BoardRepository.AddAsync(mapper.Map<Board>(board));
         await unitOfWork.SaveChangesAsync();
         return mapper.Map<BoardDto>(dbBoard);
@@ -56,4 +56,6 @@ public class BoardService(IUnitOfWork unitOfWork, IMapper mapper) : IBoardServic
         BoardRepository.Update(dbBoard);
         await unitOfWork.SaveChangesAsync();
     }
+    
+    
 }

@@ -54,4 +54,33 @@ public class TaskController(ITaskService taskService) : ControllerBase
             Succeeded = true,
         };
     }
+
+    [HttpPost("shift-range")]
+    [HandleRequestResponse]
+    public async Task<Response<object>> ShiftTaskOrderAsync([FromBody] ShiftTaskOrderRangeDto dto)
+    {
+        await taskService.ShiftTaskOrderRangeAsync(dto);
+        return new Response<object>
+        {
+            Data = null,
+            Errors = [],
+            Message = "Task order shifted",
+            StatusCode = System.Net.HttpStatusCode.OK,
+            Succeeded = true,
+        };
+    }
+    [HttpPatch("update-positions")]
+    [HandleRequestResponse]
+    public async Task<Response<object>> UpdateTaskPositionsAsync([FromBody] UpdateTaskPositionDto updateTaskPositionDto)
+    {
+        await taskService.UpdateTaskPositionsAsync(updateTaskPositionDto);
+        return new Response<object>
+        {
+            Data = null,
+            Errors = [],
+            Message = "Task position updated",
+            StatusCode = System.Net.HttpStatusCode.OK,
+            Succeeded = true,
+        };
+    }
 }

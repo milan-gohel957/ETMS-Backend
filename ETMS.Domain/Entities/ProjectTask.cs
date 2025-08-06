@@ -19,6 +19,8 @@ public class ProjectTask : BaseEntity
     public List<Comment> Comments { get; set; } = [];
     public List<Attachment> Attachments { get; set; } = [];
 
+    public int Order { get; set; }
+
     [ForeignKey("CreatedByUser")]
     public int? CreatedByUserId { get; set; }
     public User? CreatedByUser { get; set; }

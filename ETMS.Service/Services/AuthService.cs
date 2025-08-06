@@ -49,9 +49,9 @@ public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, I
                 await SendMagicLinkAsync(hostUri, dbUser.MagicLinkToken, signUpRequestDto.Email);
                 return;
             }
-            if(signUpRequestDto.Email == dbUser.Email)
+            if (signUpRequestDto.Email == dbUser.Email)
                 throw new ResponseException(EResponse.BadRequest, "Verification Pending. Please check your email.");
-            
+
             throw new ResponseException(EResponse.BadRequest, "User With Same Email Or Username already exists.");
         }
 
@@ -193,16 +193,12 @@ public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, I
         var (newAccessToken, newAccessExpiresAt) = tokenService.GenerateAccessToken(dbUser);
         var (newRefreshToken, newRefreshExpiresAt, newGuid) = tokenService.GenerateRefreshToken();
 
-        UserRefreshTokenRepo.Update(new()
-        {
-            ExpiresAt = newRefreshExpiresAt,
-            Guid = newGuid,
-            CreatedAt = DateTime.UtcNow,
-            IpAddress = ipAddress,
-            IsBlocked = false,
-            IsExpired = false,
-            UserId = dbUser.Id
-        });
+        userRefreshToken.UpdatedAt = DateTime.UtcNow;
+        userRefreshToken.ExpiresAt = newRefreshExpiresAt;
+        userRefreshToken.Guid = newGuid;
+        userRefreshToken.IpAddress = ipAddress;
+        
+        UserRefreshTokenRepo.Update(userRefreshToken);
 
         await unitOfWork.SaveChangesAsync();
 
