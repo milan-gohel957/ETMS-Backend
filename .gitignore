@@ -6,6 +6,14 @@
 # dotenv files
 .env
 
+appsettings.Development.json
+appsettings.json
+appsettings.Production.json
+
+# Output from running `dotnet build`
+bin/
+obj/q
+
 # User-specific files
 *.rsuser
 *.suo
