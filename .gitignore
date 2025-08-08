@@ -6,9 +6,9 @@
 # dotenv files
 .env
 
-appsettings.Development.json
-appsettings.json
-appsettings.Production.json
+ETMS.Web/appsettings.Development.json
+ETMS.Web/appsettings.json
+ETMS.Web/appsettings.Production.json
 
 # Output from running `dotnet build`
 bin/
