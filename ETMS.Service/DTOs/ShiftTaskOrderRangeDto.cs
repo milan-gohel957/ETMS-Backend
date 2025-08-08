@@ -4,7 +4,6 @@ public class ShiftTaskOrderRangeDto
 {
     public int MinOrder { get; set; }
 
-    public int MaxOrder { get; set; }
 
     public int BoardId { get; set; }
     

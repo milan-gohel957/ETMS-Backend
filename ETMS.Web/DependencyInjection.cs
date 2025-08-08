@@ -13,21 +13,22 @@ namespace ETMS.Web;
 
 public static class DependencyInjection
 {
+
     public static void RegisterServices(IServiceCollection services, string connectionString, IConfiguration config)
     {
 
         services.AddDbContext<ApplicationDbContext>(options =>
-        {
-            options.UseSqlServer(
-                connectionString,
-                b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)
-            );
-        });
+            {
+                options.UseSqlServer(
+                    connectionString,
+                    b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)
+                );
+            });
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         services.Configure<JwtSettings>(config.GetSection("Jwt"));
-        
+
         var allReferencedTypes = Assembly
             .GetAssembly(typeof(DependencyInjection))!
             .GetReferencedAssemblies()
@@ -41,7 +42,7 @@ public static class DependencyInjection
             )
             .ToList();
         var interfaces = allReferencedTypes.Where(t => t.IsInterface);
-
+        
         foreach (var serviceInterface in interfaces)
         {
             var implementation = allReferencedTypes.FirstOrDefault(c =>

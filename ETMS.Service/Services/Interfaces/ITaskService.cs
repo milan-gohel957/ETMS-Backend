@@ -9,5 +9,6 @@ public interface ITaskService
     Task<IEnumerable<TaskDto>> GetTasksByBoardIdAsync(int boardId);
     Task ShiftTaskOrderRangeAsync(ShiftTaskOrderRangeDto shiftTaskOrderRangeDto);
     Task UpdateTaskPositionsAsync(UpdateTaskPositionDto updateTaskOrderDto);
+    Task MoveTaskAsync(MoveTaskDto moveTaskDto);
 
 }

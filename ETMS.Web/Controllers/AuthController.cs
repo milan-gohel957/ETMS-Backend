@@ -86,6 +86,23 @@ public class AuthController(IAuthService authService, IHostEnvironment hostEnvir
             Succeeded = true,
         };
     }
+    [HttpPost("login/google")]
+    public async Task<Response<LoginResponseDto>> GoogleLogin([FromBody] GoogleLoginDto googleAuthDto)
+    {
+        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+        googleAuthDto.IpAddress = ipAddress;
+        var loginResponse = await authService.AuthenticateWithGoogleAsync(
+            googleAuthDto
+        );
+        return new Response<LoginResponseDto>()
+        {
+            Data = loginResponse,
+            StatusCode = HttpStatusCode.OK,
+            Errors = [],
+            Message = "Login Successful!",
+            Succeeded = true,
+        };
+    }
 
     [HttpPost("login")]
     [HandleRequestResponse(TypeResponse = ETypeRequestResponse.ResponseWithData)]

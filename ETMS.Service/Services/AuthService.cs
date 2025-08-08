@@ -10,11 +10,15 @@ using ETMS.Service.Exceptions;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using AutoMapper;
+using Google.Apis.Auth;
+using Newtonsoft.Json;
 
 namespace ETMS.Service.Services;
 
 public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, IConfiguration configuration, ITokenService tokenService, IMapper mapper) : IAuthService
 {
+    private readonly string _googleUserInfoUrl = configuration["Authorization:Google:UserInfoUrl"]!;
+
     private IGenericRepository<User>? _userRepo;
     private IGenericRepository<User> UserRepo => _userRepo ??= unitOfWork.GetRepository<User>();
 
@@ -27,7 +31,9 @@ public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, I
     private IGenericRepository<UserRefreshToken> UserRefreshTokenRepo = unitOfWork.GetRepository<UserRefreshToken>();
     public async Task SignUpAsync(SignUpRequestDto signUpRequestDto, string hostUri)
     {
-
+        //Normal Sign ups only
+        if (signUpRequestDto.AuthProvider != AuthProviderEnum.Normal)
+            throw new ResponseException(EResponse.BadRequest, "No External Login Allowed");
         //Check if User already exists with this email or username
 
         User? dbUser = await UserRepo.FirstOrDefaultAsync(x => !x.IsDeleted && x.Email.ToLower() == signUpRequestDto.Email.ToLower() || x.UserName.Equals(signUpRequestDto.Username));
@@ -54,7 +60,6 @@ public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, I
 
             throw new ResponseException(EResponse.BadRequest, "User With Same Email Or Username already exists.");
         }
-
 
         User newUser = new()
         {
@@ -139,21 +144,68 @@ public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, I
         if (!HashHelper.VerifyPassword(user.PasswordHash, password))
             throw new ResponseException(EResponse.BadRequest, "Invalid credentials.");
 
+        return await _generateAndSaveTokensAsync(user, loginRequestDto.UserHostAddress);
+    }
+
+    public async Task<LoginResponseDto> AuthenticateWithGoogleAsync(GoogleLoginDto googleLoginDto)
+    {
+        // Validate the ID token and retrieve the payload
+        var payload = await ValidateGoogleTokenAsync(googleLoginDto.IdToken);
+
+        // Fetch additional user profile information using the access token
+        var userProfile = await GetGoogleUserProfileAsync(googleLoginDto.AccessToken);
+
+        if (userProfile == null)
+            throw new ResponseException(EResponse.Unauthorized, "Invalid Google ID Token.");
+
+        if (!userProfile.VerifiedEmail)
+            throw new ResponseException(EResponse.Unauthorized, "Google User Has Not Verified Their Email.");
+        // Check if the user already exists in the database
+        var user = await UserRepo.FirstOrDefaultAsync(u => u.Email.ToLower() == userProfile.Email.ToLower());
+        
+        // If user doesn't exist, create a new user
+        if (user == null)
+        {
+            User newUser = new()
+            {
+                Email = userProfile.Email,
+                FirstName = userProfile.GivenName,
+                LastName = userProfile.FamilyName,
+                UserName = userProfile.Email,
+                IsVerifiedUser = true,
+                PasswordHash = userProfile.Email,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+            };
+            user = await UserRepo.AddAsync(newUser);
+            await unitOfWork.SaveChangesAsync();
+            // Use the login service to issue a token
+        }
+
+        return await _generateAndSaveTokensAsync(user , googleLoginDto.IpAddress);
+    }
+    private async Task<LoginResponseDto> _generateAndSaveTokensAsync(User user, string? ipAddress)
+    {
+        // 1. Generate the access and refresh tokens
         var (accessToken, accessExpiresAt) = tokenService.GenerateAccessToken(user);
         var (refreshToken, refreshExpiresAt, guid) = tokenService.GenerateRefreshToken();
 
+        // 2. Create and save the new refresh token entity
         await UserRefreshTokenRepo.AddAsync(new UserRefreshToken()
         {
             ExpiresAt = refreshExpiresAt,
             Guid = guid,
             CreatedAt = DateTime.UtcNow,
-            IpAddress = loginRequestDto.UserHostAddress,
+            IpAddress = ipAddress,
             IsBlocked = false,
-            IsExpired = false,
+            IsExpired = false, // This should likely be false on creation
             UserId = user.Id
         });
 
+        // 3. Save all changes to the database (the user and/or the token)
         await unitOfWork.SaveChangesAsync();
+
+        // 4. Return the DTO with the new tokens
         return new LoginResponseDto()
         {
             AccessToken = accessToken,
@@ -163,6 +215,29 @@ public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, I
         };
     }
 
+    private static async Task<GoogleJsonWebSignature.Payload> ValidateGoogleTokenAsync(string idToken)
+    {
+        var payload = await GoogleJsonWebSignature.ValidateAsync(idToken);
+
+        if (payload == null || string.IsNullOrEmpty(payload.Email))
+            throw new ResponseException(EResponse.Unauthorized, "Invalid Google ID Token.");
+
+        return payload;
+    }
+
+    private async Task<GoogleUserProfile?> GetGoogleUserProfileAsync(string accessToken)
+    {
+        using var httpClient = new HttpClient();
+
+        //send GET  request to google userInfo API
+        var response = await httpClient.GetAsync($"{_googleUserInfoUrl}?access_token={accessToken}");
+        response.EnsureSuccessStatusCode();
+
+        var content = await response.Content.ReadAsStringAsync();
+        var userProfile = JsonConvert.DeserializeObject<GoogleUserProfile>(content);
+
+        return userProfile;
+    }
     public async Task<CurrentUserDto> GetCurrentUserDtoAsync(int userId)
     {
         User? dbUser = await UserRepo.GetByIdAsync(userId);
@@ -197,7 +272,7 @@ public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, I
         userRefreshToken.ExpiresAt = newRefreshExpiresAt;
         userRefreshToken.Guid = newGuid;
         userRefreshToken.IpAddress = ipAddress;
-        
+
         UserRefreshTokenRepo.Update(userRefreshToken);
 
         await unitOfWork.SaveChangesAsync();

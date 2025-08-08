@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using static ETMS.Domain.Enums.Enums;
 
 public class SignUpRequestDto
 {
@@ -19,4 +20,6 @@ public class SignUpRequestDto
     [Required]
     [EmailAddress]
     public string Email { get; set; } = string.Empty;
+
+    public AuthProviderEnum AuthProvider { get; set; }
 }

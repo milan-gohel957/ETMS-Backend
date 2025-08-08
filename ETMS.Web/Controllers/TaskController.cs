@@ -83,4 +83,18 @@ public class TaskController(ITaskService taskService) : ControllerBase
             Succeeded = true,
         };
     }
+
+    [HttpPost("move")]
+    public async Task<Response<object>> MoveTaskAsync([FromBody] MoveTaskDto moveTaskDto)
+    {
+        await taskService.MoveTaskAsync(moveTaskDto);
+        return new Response<object>
+        {
+            Data = null,
+            Errors = [],
+            Message = "Task moved",
+            StatusCode = System.Net.HttpStatusCode.OK,
+            Succeeded = true,
+        };
+    }
 }

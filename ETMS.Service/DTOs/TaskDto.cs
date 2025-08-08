@@ -10,4 +10,5 @@ public class TaskDto : BaseEntityDto
     public string? Description { get; set; }
     public int StatusId { get; set; } = (int)StatusEnum.Pending;
     public int BoardId { get; set; }
+    public int Order { get; set; }     
 }

@@ -28,7 +28,14 @@ public class Enums
         Pending = 1,
         Completed = 2
     }
-        
+
+    public enum AuthProviderEnum
+    {
+        Normal = 1,
+        Google = 2,
+        Github = 3
+    }
+
     public enum RoleEnum
     {
         Admin = 1,
