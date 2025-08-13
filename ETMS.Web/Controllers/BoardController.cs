@@ -10,75 +10,46 @@ namespace ETMS.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class BoardController(IBoardService boardService) : ControllerBase
+public class BoardController(IBoardService boardService) : BaseApiController
 {
     [HttpGet("by-project/{projectId:int}")]
-    [HandleRequestResponse(TypeResponse = ETypeRequestResponse.ResponseWithData)]
-    public async Task<Response<IEnumerable<BoardDto>>> GetBoardsByProjectId(int projectId)
+    public async Task<IActionResult> GetBoardsByProjectId(int projectId)
     {
         IEnumerable<BoardDto> boards = await boardService.GetBoardsByProjectIdAsync(projectId);
-        return new()
-        {
-            Data = boards,
-            Message = "Boards retrieved successfully.",
-            Succeeded = true,
-            StatusCode = HttpStatusCode.OK
-        };
+        return Success(boards);
     }
 
     [HttpPost]
-    [HandleRequestResponse(TypeResponse = ETypeRequestResponse.ResponseWithData)]
-    public async Task<Response<BoardDto>> CreateBoard(CreateBoardDto createBoardDto)
+    public async Task<IActionResult> CreateBoard(CreateBoardDto createBoardDto)
     {
         BoardDto createdBoardDto = await boardService.CreateBoardAsync(createBoardDto);
-        return new()
-        {
-            Data = createdBoardDto,
-            Message = "Board created successfully.",
-            Succeeded = true,
-            StatusCode = HttpStatusCode.Created // 201 Created is more semantic here
-        };
+        return Success(createdBoardDto);
     }
 
     [HttpGet("{id}")]
-    [HandleRequestResponse(TypeResponse = ETypeRequestResponse.ResponseWithData)]
-    public async Task<Response<BoardDto>> GetBoardById(int id)
+    public async Task<IActionResult> GetBoardById(int id)
     {
-        var board = await boardService.GetBoardByIdAsync(id);
-        return new()
-        {
-            Data = board,
-            Message = "Board retrieved successfully.",
-            Succeeded = true,
-            StatusCode = HttpStatusCode.OK
-        };
+        BoardDto board = await boardService.GetBoardByIdAsync(id);
+        return Success(board);
     }
 
+    [HttpPatch("move/{boardId:int}")]
+    public async Task<IActionResult> MoveBoard(int boardId, MoveBoardDto moveBoardDto)
+    {
+        await boardService.MoveBoardAsync(boardId, moveBoardDto);
+        return Success<object>(null, "Board moved successfully.");
+    }
     [HttpPut("{id:int}")]
-    [HandleRequestResponse]
-    public async Task<Response<object>> UpdateBoard(int id, UpdateBoardDto updateBoardDto)
+    public async Task<IActionResult> UpdateBoard(int id, UpdateBoardDto updateBoardDto)
     {
         await boardService.UpdateBoardAsync(id, updateBoardDto);
-        return new()
-        {
-            Data = null,
-            Message = "Board updated successfully.",
-            Succeeded = true,
-            StatusCode = HttpStatusCode.OK
-        };
+        return Success<object>(null, "Board updated successfully.");
     }
 
     [HttpDelete("{id:int}")]
-    [HandleRequestResponse]
-    public async Task<Response<object>> DeleteBoard(int id)
+    public async Task<IActionResult> DeleteBoard(int id)
     {
         await boardService.DeleteBoardAsync(id);
-        return new()
-        {
-            Data = null,
-            Message = "Board deleted successfully.",
-            Succeeded = true,
-            StatusCode = HttpStatusCode.OK
-        };
+        return Success<object>(null, "Board deleted successfully.");
     }
 }

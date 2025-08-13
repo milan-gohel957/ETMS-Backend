@@ -18,6 +18,15 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity, 
         _dbSet = _context.Set<T>();
     }
 
+    public async Task SoftDeleteRangeAsync(Expression<Func<T, bool>>? predicate = null)
+    {
+        IQueryable<T> query = GetNonDeletedQuery();
+        if (predicate != null)
+        {
+            query = query.Where(predicate);
+        }
+        await query.ForEachAsync(x => x.IsDeleted = true);
+    }
     public IQueryable<T> GetNonDeletedQuery()
     {
         return _dbSet.Where(x => !x.IsDeleted);
@@ -105,8 +114,8 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity, 
     {
         return await GetNonDeletedQuery().Where(e => !e.IsDeleted).Where(predicate).ToListAsync(cancellationToken);
     }
-     
-    public async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,CancellationToken cancellationToken = default)
+
+    public async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null, CancellationToken cancellationToken = default)
     {
         var query = GetNonDeletedQuery();
         if (orderBy != null)
@@ -122,12 +131,16 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity, 
         return await GetNonDeletedQuery().Where(predicate).ToListAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<T>> GetAllWithIncludesAsync(Expression<Func<T, bool>>? predicate = null, params Expression<Func<T, object>>[] includes)
+    public async Task<IEnumerable<T>> GetAllWithIncludesAsync(Expression<Func<T, bool>>? predicate = null, Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null, params Expression<Func<T, object>>[] includes)
     {
         var query = predicate == null ? GetNonDeletedQuery() : GetNonDeletedQuery().Where(predicate);
         foreach (var include in includes)
         {
             query = query.Include(include);
+        }
+        if (orderBy!= null)
+        {
+            query = orderBy(query);
         }
 
         return await query.ToListAsync();

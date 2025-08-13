@@ -11,8 +11,8 @@ public class ProjectDto : BaseEntityDto
     [RegularExpression(@"\S+", ErrorMessage = "Project Name cannot be empty or whitespace.")]
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
-    public DateTime StartDate { get; set; }
-    public DateTime EndDate { get; set; }
+    public DateOnly StartDate { get; set; }
+    public DateOnly EndDate { get; set; }
     [ForeignKey("Status")]
     public int StatusId { get; set; } = (int)StatusEnum.Pending;
     public Status? Status { get; set; } = null;

@@ -8,93 +8,53 @@ namespace ETMS.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class TaskController(ITaskService taskService) : ControllerBase
+public class TaskController(ITaskService taskService) : BaseApiController
 {
-    [HandleRequestResponse(TypeResponse = Domain.Enums.Enums.ETypeRequestResponse.ResponseWithData)]
     [HttpPost]
-    public async Task<Response<TaskDto>> CreateProjectTask(CreateTaskDto createTaskDto)
+    public async Task<IActionResult> CreateProjectTask(CreateTaskDto createTaskDto)
     {
         TaskDto taskDto = await taskService.CreateTaskAsync(createTaskDto);
-        return new Response<TaskDto>
-        {
-            Data = taskDto,
-            Errors = [],
-            Message = "Task Created Successfully!",
-            StatusCode = System.Net.HttpStatusCode.OK,
-            Succeeded = true
-        };
+        return Success(taskDto);
     }
 
     [HttpGet("{boardId}")]
-    [HandleRequestResponse(TypeResponse = Domain.Enums.Enums.ETypeRequestResponse.ResponseWithData)]
-    public async Task<Response<IEnumerable<TaskDto>>> GetTasksByBoardId(int boardId)
+    public async Task<IActionResult> GetTasksByBoardId(int boardId)
     {
         IEnumerable<TaskDto> taskDtos = await taskService.GetTasksByBoardIdAsync(boardId);
-        return new Response<IEnumerable<TaskDto>>
-        {
-            Data = taskDtos,
-            Errors = [],
-            Message = "Success",
-            StatusCode = System.Net.HttpStatusCode.OK,
-            Succeeded = true
-        };
+        return Success(taskDtos);
     }
 
     [HttpDelete("{boardId}/{taskId}")]
-    [HandleRequestResponse]
-    public async Task<Response<object>> DeleteTask(int boardId, int taskId)
+    public async Task<IActionResult> DeleteTask(int boardId, int taskId)
     {
         await taskService.DeleteTask(boardId, taskId);
-        return new Response<object>
-        {
-            Data = null,
-            Errors = [],
-            Message = "Task Deleted",
-            StatusCode = System.Net.HttpStatusCode.OK,
-            Succeeded = true,
-        };
+        return Success<object>(null, "Task deleted successfully.");
     }
 
     [HttpPost("shift-range")]
-    [HandleRequestResponse]
-    public async Task<Response<object>> ShiftTaskOrderAsync([FromBody] ShiftTaskOrderRangeDto dto)
+    public async Task<IActionResult> ShiftTaskOrderAsync([FromBody] ShiftTaskOrderRangeDto dto)
     {
         await taskService.ShiftTaskOrderRangeAsync(dto);
-        return new Response<object>
-        {
-            Data = null,
-            Errors = [],
-            Message = "Task order shifted",
-            StatusCode = System.Net.HttpStatusCode.OK,
-            Succeeded = true,
-        };
+        return Success<object>(null, "Task order shifted");
     }
     [HttpPatch("update-positions")]
-    [HandleRequestResponse]
-    public async Task<Response<object>> UpdateTaskPositionsAsync([FromBody] UpdateTaskPositionDto updateTaskPositionDto)
+    public async Task<IActionResult> UpdateTaskPositionsAsync([FromBody] UpdateTaskPositionDto updateTaskPositionDto)
     {
         await taskService.UpdateTaskPositionsAsync(updateTaskPositionDto);
-        return new Response<object>
-        {
-            Data = null,
-            Errors = [],
-            Message = "Task position updated",
-            StatusCode = System.Net.HttpStatusCode.OK,
-            Succeeded = true,
-        };
+        return Success<object>(null, "Task Position Updated Successfully.");
     }
 
-    [HttpPost("move")]
-    public async Task<Response<object>> MoveTaskAsync([FromBody] MoveTaskDto moveTaskDto)
+    [HttpPost("move/{taskId:int}")]
+    public async Task<IActionResult> MoveTaskAsync([FromBody] MoveTaskDto moveTaskDto, int taskId)
     {
-        await taskService.MoveTaskAsync(moveTaskDto);
-        return new Response<object>
-        {
-            Data = null,
-            Errors = [],
-            Message = "Task moved",
-            StatusCode = System.Net.HttpStatusCode.OK,
-            Succeeded = true,
-        };
+        await taskService.MoveTaskAsync(moveTaskDto, taskId);
+        return Success("Task moved successfully.");
+    }
+
+    [HttpPut("{taskId}")]
+    public async Task<IActionResult> UpdateTask(int taskId, [FromBody] UpdateTaskDto taskDto)
+    {
+        await taskService.UpdateTaskAsync(taskDto.BoardId, taskId,taskDto);
+        return Success<object>(null, "Task updated successfully.");
     }
 }

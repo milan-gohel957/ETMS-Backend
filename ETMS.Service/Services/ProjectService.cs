@@ -22,7 +22,8 @@ public class ProjectService(IUnitOfWork unitOfWork, IMapper mapper) : IProjectSe
     //Get user's project list just requires to be authorized
     public async Task<IEnumerable<ProjectDto>> GetUserProjectsAsync(int userId)
     {
-        return mapper.Map<IEnumerable<ProjectDto>>((await UserProjectRoleRepo.GetAllWithIncludesAsync(upr => upr.UserId == userId, upr => upr.Project)).Select(p => p.Project));
+        var projects = (await UserProjectRoleRepo.GetAllWithIncludesAsync(upr => upr.UserId == userId, includes: upr => upr.Project)).Select(p => p.Project);
+        return mapper.Map<IEnumerable<ProjectDto>>(projects);
     }
 
     public async Task<ProjectDto?> GetProjectByIdAsync(int projectId)
@@ -71,7 +72,6 @@ public class ProjectService(IUnitOfWork unitOfWork, IMapper mapper) : IProjectSe
             });
         if (projectDto.IsAddDefaultBoards)
         {
-
             await _boardRepository.AddRangeAsync(GetDefaultBoards(projectDto.CreatedByUserId, addedProject.Id));
         }
         await unitOfWork.SaveChangesAsync();

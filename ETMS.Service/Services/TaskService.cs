@@ -1,4 +1,5 @@
 using AutoMapper;
+using AutoWrapper.Wrappers;
 using ETMS.Domain.Entities;
 using ETMS.Repository.Repositories.Interfaces;
 using ETMS.Service.DTOs;
@@ -36,6 +37,21 @@ public class TaskService(IUnitOfWork unitOfWork, IMapper mapper) : ITaskService
         await _taskRepository.SoftDeleteByIdAsync(taskId);
     }
 
+    public async Task UpdateTaskAsync(int boardId, int taskId, UpdateTaskDto updateTaskDto)
+    {
+        bool isBoardExists = await _boardRepository.ExistsAsync(boardId);
+        if (!isBoardExists)
+            throw new ResponseException(EResponse.NotFound, "Board Not Found.");
+
+        ProjectTask? dbTask = await _taskRepository.FirstOrDefaultAsync(t => t.Id == taskId && t.BoardId == boardId);
+        if (dbTask == null)
+            throw new ResponseException(EResponse.NotFound, "Task Not Found.");
+        mapper.Map(updateTaskDto, dbTask);
+
+        _taskRepository.Update(dbTask);
+
+        await unitOfWork.SaveChangesAsync();
+    }
     public async Task<TaskDto> CreateTaskAsync(CreateTaskDto createTaskDto)
     {
         //Using queryable to optimize the order calculation based on the provided order and addedAtEndOfBoard flag.
@@ -64,6 +80,7 @@ public class TaskService(IUnitOfWork unitOfWork, IMapper mapper) : ITaskService
         bool isBoardExists = await _boardRepository.ExistsAsync(updateTaskOrderDto.NewBoardId);
         if (!isBoardExists)
             throw new ResponseException(EResponse.NotFound, "Board Not Found.");
+
         //Update the Board Id and Task Order
         ProjectTask? dbTask = await _taskRepository.GetByIdAsync(updateTaskOrderDto.TaskId);
         if (dbTask == null)
@@ -96,7 +113,7 @@ public class TaskService(IUnitOfWork unitOfWork, IMapper mapper) : ITaskService
 
     private const int DefaultGap = 1000;
     private const int ShiftGap = 100;
-    public async Task MoveTaskAsync(MoveTaskDto moveTaskDto)
+    public async Task MoveTaskAsync(MoveTaskDto moveTaskDto, int taskId)
     {
         // Start a database transaction to ensure atomicity.
         // If anything fails, the entire operation is rolled back.
@@ -109,9 +126,9 @@ public class TaskService(IUnitOfWork unitOfWork, IMapper mapper) : ITaskService
             if (!isBoardExists)
                 throw new ResponseException(EResponse.NotFound, $"Board with ID {moveTaskDto.NewBoardId} not found.");
 
-            ProjectTask? movedTask = await _taskRepository.GetByIdAsync(moveTaskDto.TaskIdToMove);
+            ProjectTask? movedTask = await _taskRepository.GetByIdAsync(taskId);
             if (movedTask == null)
-                throw new ResponseException(EResponse.NotFound, $"Task with ID {moveTaskDto.TaskIdToMove} not found.");
+                throw new ResponseException(EResponse.NotFound, $"Task with ID {taskId} not found.");
 
             // === 2. GET NEIGHBOR ORDERS ===
             int? prevOrder = moveTaskDto.PreviousTaskId.HasValue

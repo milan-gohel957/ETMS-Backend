@@ -10,8 +10,8 @@ public class Project : BaseEntity
     [Required(AllowEmptyStrings = false, ErrorMessage = "Project Name is Required.")]
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
-    public DateTime StartDate { get; set; }
-    public DateTime EndDate { get; set; }
+    public DateOnly StartDate { get; set; }
+    public DateOnly EndDate { get; set; }
     [ForeignKey("Status")]
     public int StatusId { get; set; } = (int)StatusEnum.Pending;
     public Status? Status { get; set; }

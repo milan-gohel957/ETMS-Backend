@@ -8,6 +8,7 @@ public interface IGenericRepository<T> where T : BaseEntity
 {
   Task SoftDeleteRangeByIds(List<int> ids);
   Task SoftDeleteByIdAsync(int id);
+  Task SoftDeleteRangeAsync(Expression<Func<T, bool>>? predicate = null);
 
 
   // Read operations
@@ -15,7 +16,8 @@ public interface IGenericRepository<T> where T : BaseEntity
   Task<T?> GetByIdWithIncludesAsync(int id, params Expression<Func<T, object>>[] includes);
   Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default);
 
-  Task<IEnumerable<T>> GetAllWithIncludesAsync(Expression<Func<T, bool>>? predicate = null, params Expression<Func<T, object>>[] includes);
+  Task<IEnumerable<T>> GetAllWithIncludesAsync(Expression<Func<T, bool>>? predicate = null, Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null, params Expression<Func<T, object>>[] includes);
+
   Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default);
 
   // Query operations

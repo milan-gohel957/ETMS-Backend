@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
+using AutoWrapper.Wrappers;
 using ETMS.Domain.Common;
 using ETMS.Service.DTOs;
 using ETMS.Service.Exceptions;
@@ -13,29 +14,19 @@ using static ETMS.Domain.Enums.Enums;
 namespace ETMS.Web.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
-public class AuthController(IAuthService authService, IHostEnvironment hostEnvironment) : ControllerBase
+[Route("api/auth")]
+public class AuthController(IAuthService authService, IHostEnvironment hostEnvironment) : BaseApiController
 {
     [HttpPost("signup")]
-    [HandleRequestResponse]
-    public async Task<Response<object>> SignUp([FromBody] SignUpRequestDto signUpRequestDto)
+    public async Task<IActionResult> SignUp([FromBody] SignUpRequestDto signUpRequestDto)
     {
         var hostUri = $"{Request.Scheme}://{Request.Host}";
         await authService.SignUpAsync(signUpRequestDto, hostUri);
-
-        return new Response<object>()
-        {
-            Data = null,
-            Message = "Sign-up successful. Check your email to verify your account.",
-            Errors = [],
-            Succeeded = true,
-            StatusCode = HttpStatusCode.OK
-        };
+        return Success("Sign-up successful. Check your email to verify your account.");
     }
     [HttpGet("me")]
-    [HandleRequestResponse(TypeResponse = ETypeRequestResponse.ResponseWithData)]
     [Authorize]
-    public async Task<Response<CurrentUserDto>> GetCurrentUserProfile()
+    public async Task<IActionResult> GetCurrentUserProfile()
     {
         string? userIdString = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -46,19 +37,11 @@ public class AuthController(IAuthService authService, IHostEnvironment hostEnvir
 
         var currentUser = await authService.GetCurrentUserDtoAsync(userId);
 
-        return new()
-        {
-            Data = currentUser,
-            Errors = [],
-            Succeeded = true,
-            Message = "Success",
-            StatusCode = HttpStatusCode.OK
-        };
+        return Success(currentUser);
     }
 
     [HttpPost("refresh")]
-    [HandleRequestResponse(TypeResponse = ETypeRequestResponse.ResponseWithData)]
-    public async Task<Response<LoginResponseDto>> RefreshToken(RefreshTokenRequestDto refreshTokenRequestDto)
+    public async Task<IActionResult> RefreshToken(RefreshTokenRequestDto refreshTokenRequestDto)
     {
         LoginResponseDto loginResponseDto = await authService.RefreshTokenAsync(refreshTokenRequestDto.RefreshToken, GetUserIpAddress());
 
@@ -78,35 +61,23 @@ public class AuthController(IAuthService authService, IHostEnvironment hostEnvir
             SameSite = SameSiteMode.None
         });
 
-        return new Response<LoginResponseDto>()
-        {
-            Message = "Token Refreshed Successfully!",
-            Data = loginResponseDto,
-            StatusCode = HttpStatusCode.NoContent,
-            Succeeded = true,
-        };
+        return Success(loginResponseDto, "Token Refreshed Successfully!");
     }
     [HttpPost("login/google")]
-    public async Task<Response<LoginResponseDto>> GoogleLogin([FromBody] GoogleLoginDto googleAuthDto)
+    public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDto googleAuthDto)
     {
         var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
         googleAuthDto.IpAddress = ipAddress;
         var loginResponse = await authService.AuthenticateWithGoogleAsync(
             googleAuthDto
         );
-        return new Response<LoginResponseDto>()
-        {
-            Data = loginResponse,
-            StatusCode = HttpStatusCode.OK,
-            Errors = [],
-            Message = "Login Successful!",
-            Succeeded = true,
-        };
+       
+        return Success(loginResponse, "Login Successfull!");
     }
 
     [HttpPost("login")]
-    [HandleRequestResponse(TypeResponse = ETypeRequestResponse.ResponseWithData)]
-    public async Task<Response<LoginResponseDto>> Login([FromBody] LoginRequestDto loginRequestDto)
+    // [HandleRequestResponse(TypeResponse = ETypeRequestResponse.ResponseWithData)]
+    public async Task<IActionResult> Login([FromBody] LoginRequestDto loginRequestDto)
     {
         loginRequestDto.UserHostAddress = GetUserIpAddress();
 
@@ -128,14 +99,7 @@ public class AuthController(IAuthService authService, IHostEnvironment hostEnvir
             SameSite = SameSiteMode.None
         });
 
-        return new Response<LoginResponseDto>()
-        {
-            Data = loginResponseDto,
-            Message = "Login Successful!",
-            Errors = [],
-            Succeeded = true,
-            StatusCode = HttpStatusCode.OK
-        };
+        return Success(loginResponseDto, "Login Successful!");
     }
 
     private string? GetUserIpAddress()
@@ -159,32 +123,16 @@ public class AuthController(IAuthService authService, IHostEnvironment hostEnvir
     }
 
     [HttpGet("authtest")]
-    [HandleRequestResponse]
     [Authorize]
-    public Response<object> AuthorizeTest()
+    public IActionResult AuthorizeTest()
     {
-        return new Response<object>()
-        {
-            Data = null,
-            Message = "Authorization Test Successful!",
-            Errors = [],
-            Succeeded = true,
-            StatusCode = HttpStatusCode.NoContent
-        };
+        return Success<object>(null, "Authorization Test Successful!");
     }
 
     [HttpPost("magiclogin")]
-    [HandleRequestResponse(TypeResponse = ETypeRequestResponse.ResponseWithData)]
-    public async Task<Response<object>> MagicLogin([FromQuery] string token)
+    public async Task<IActionResult> MagicLogin([FromQuery] string token)
     {
         await authService.MagicLoginAsync(token);
-        return new Response<object>()
-        {
-            Data = null,
-            Message = "User Verified Successfully!",
-            Errors = [],
-            Succeeded = true,
-            StatusCode = HttpStatusCode.NoContent
-        };
+        return Success<object>(null, "User verified successfully!");
     }
 }

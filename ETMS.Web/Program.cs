@@ -4,17 +4,35 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using ETMS.Web.Providers;
 using ETMS.Service.Mappings.Interfaces;
+using Microsoft.AspNetCore.Mvc;
+using ETMS.Domain.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddMemoryCache();
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var errors = context.ModelState
+            .Where(e => e.Value.Errors.Count > 0)
+            .SelectMany(e => e.Value.Errors)
+            .Select(e => e.ErrorMessage)
+            .ToList();
+        Console.WriteLine($"Validation failed: {string.Join(", ", context.ModelState)}");
+        var response = new ApiResponse<object>("Validation Failed", errors);
+        return new BadRequestObjectResult(response);
+    };
+});
+
 // Register services and dependencies
 DependencyInjection.RegisterServices(
     builder.Services,
     builder.Configuration.GetConnectionString("ETMS") ?? "",
-    builder.Configuration);
+    builder.Configuration
+    );
 
 
 builder.Services.AddAutoMapper(
@@ -69,12 +87,7 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
-// builder.Services.AddAntiforgery(options => {
-//     options.Cookie.Name = "X-CSRF-TOKEN";
-//     options.HeaderName = "X-CSRF-TOKEN";
-//     options.Cookie.SameSite = SameSiteMode.None;
-//     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-// });
+
 builder.Services.AddControllers();
 
 var app = builder.Build();

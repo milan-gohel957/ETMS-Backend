@@ -1,4 +1,3 @@
-using System.Net;
 using System.Security.Claims;
 using ETMS.Service.DTOs;
 using ETMS.Service.Exceptions;
@@ -7,87 +6,54 @@ using ETMS.Service.Services.Interfaces;
 using ETMS.Web.Filters;
 using Microsoft.AspNetCore.Mvc;
 using static ETMS.Domain.Enums.Enums;
-using ETMS.Domain.Common;
 
 
 namespace ETMS.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ProjectController(IProjectService projectService) : ControllerBase
+public class ProjectController(IProjectService projectService) : BaseApiController
 {
     [HttpGet("users/current")]
-    [HandleRequestResponse(TypeResponse = ETypeRequestResponse.ResponseWithData)]
-    public async Task<Response<IEnumerable<ProjectDto>>> GetCurrentUserProjects()
+    public async Task<IActionResult> GetCurrentUserProjects()
     {
         var userId = GetCurrentUserId(); // Use the helper method for consistency
         IEnumerable<ProjectDto> projects = await projectService.GetUserProjectsAsync(userId);
-        
-        return new()
-        {
-            Data = projects,
-            Message = "Current user's projects retrieved successfully.",
-            Succeeded = true,
-            StatusCode = HttpStatusCode.OK
-        };
+        return Success(projects, "Current user's projects retrieved successfully.");
     }
 
     [HttpDelete("{id}")]
-    [HandleRequestResponse]
-    public async Task<Response<object>> DeleteProject(int id)
+    public async Task<IActionResult> DeleteProject(int id)
     {
         await projectService.DeleteProjectAsync(id);
-        return new()
-        {
-            Data = null,
-            Message = "Project deleted successfully.",
-            Succeeded = true,
-            StatusCode = HttpStatusCode.OK
-        };
+
+        return Success<object>(null, "Project deleted successfully.");
     }
 
     [HttpPut("{id}")]
-    [HandleRequestResponse]
-    public async Task<Response<object>> UpdateProject(int id, [FromBody] UpdateProjectDto projectDto)
+    public async Task<IActionResult> UpdateProject(int id, [FromBody] UpdateProjectDto projectDto)
     {
         await projectService.UpdateProjectAsync(id, projectDto);
-        return new()
-        {
-            Data = null,
-            Message = "Project updated successfully.",
-            Succeeded = true,
-            StatusCode = HttpStatusCode.OK
-        };
+
+        return Success<object>(null, "Project updated successfully.");
     }
 
     [HttpPost]
-    [HandleRequestResponse(TypeResponse = ETypeRequestResponse.ResponseWithData)]
-    public async Task<Response<ProjectDto>> CreateProject(CreateProjectDto createProjectDto)
+    public async Task<IActionResult> CreateProject(CreateProjectDto createProjectDto)
     {
         createProjectDto.CreatedByUserId = GetCurrentUserId();
 
         ProjectDto createdProjectDto = await projectService.CreateProjectAsync(createProjectDto);
-        return new()
-        {
-            Data = createdProjectDto,
-            Message = "Project created successfully.",
-            Succeeded = true,
-            StatusCode = HttpStatusCode.Created
-        };
+
+        return Success<object>(createdProjectDto, "project created successfully.");
     }
 
     [HttpGet("{id}")]
-    [HandleRequestResponse(TypeResponse = ETypeRequestResponse.ResponseWithData)]
-    public async Task<Response<ProjectDto>> GetProjectById(int id)
+    public async Task<IActionResult> GetProjectById(int id)
     {
         var project = await projectService.GetProjectByIdAsync(id);
-        return new()
-        {
-            Data = project,
-            Message = "Project retrieved successfully.",
-            Succeeded = true,
-            StatusCode = HttpStatusCode.OK
-        };
+
+        return Success<object>(project, "project retrived successfully.");
     }
     
     private int GetCurrentUserId()

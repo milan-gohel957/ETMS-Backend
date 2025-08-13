@@ -19,4 +19,6 @@ public class Board : BaseEntity
     [ForeignKey("UpdatedByUser")]
     public int? UpdatedByUserId { get; set; }
     public User? UpdatedByUser { get; set; }
+
+    public int Order { get; set; }
 }

@@ -129,7 +129,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> dbConte
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-      
+
 
         // 6. UserRole configuration
         modelBuilder.Entity<UserRole>()
@@ -147,7 +147,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> dbConte
             .HasForeignKey(ur => ur.RoleId)
             .OnDelete(DeleteBehavior.Restrict);
 
-    
+
         // 8. Comment configuration
         // 5. COMMENT CONFIGURATION - For polymorphic relationships
         modelBuilder.Entity<Comment>(entity =>
@@ -184,7 +184,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> dbConte
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Optional: Add a check constraint to ensure only one parent is set
-            entity.HasCheckConstraint("CK_Comment_OneParent",
+            entity.ToTable("CK_Comment_OneParent",
                 "([ProjectId] IS NOT NULL AND [TaskId] IS NULL) OR ([ProjectId] IS NULL AND [TaskId] IS NOT NULL)");
         });
 

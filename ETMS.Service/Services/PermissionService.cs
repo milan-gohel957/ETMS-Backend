@@ -37,7 +37,7 @@ public class PermissionService(IUnitOfWork unitOfWork, IMemoryCache memoryCache)
 
         foreach (var user in userRoles)
         {
-            var rolePermission = await rolePermissionRepo.GetAllWithIncludesAsync(x => x.RoleId == user.RoleId, y => y.Permission);
+            var rolePermission = await rolePermissionRepo.GetAllWithIncludesAsync(x => x.RoleId == user.RoleId, includes:y => y.Permission);
 
             foreach (var role in rolePermission)
             {

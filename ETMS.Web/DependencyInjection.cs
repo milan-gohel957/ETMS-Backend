@@ -8,6 +8,8 @@ using ETMS.Repository.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Mvc;
+using ETMS.Domain.Common;
 
 namespace ETMS.Web;
 
@@ -42,7 +44,7 @@ public static class DependencyInjection
             )
             .ToList();
         var interfaces = allReferencedTypes.Where(t => t.IsInterface);
-        
+
         foreach (var serviceInterface in interfaces)
         {
             var implementation = allReferencedTypes.FirstOrDefault(c =>

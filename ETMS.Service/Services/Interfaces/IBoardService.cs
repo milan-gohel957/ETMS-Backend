@@ -10,5 +10,6 @@ public interface IBoardService
     Task<BoardDto> CreateBoardAsync(CreateBoardDto board);
     Task UpdateBoardAsync(int boardId, UpdateBoardDto updateBoardDto);
     Task DeleteBoardAsync(int boardId);
+    Task MoveBoardAsync(int boardId, MoveBoardDto moveBoardDto);
 
 }

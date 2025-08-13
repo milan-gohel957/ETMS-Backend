@@ -7,19 +7,13 @@ namespace ETMS.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class UserController(IUserService userService) : ControllerBase
+public class UserController(IUserService userService) : BaseApiController
 {
     [HttpGet("exists")]
-    public async Task<Response<UserNameExistsDto>> CheckUserNameExists([FromQuery]string userName)
+    public async Task<IActionResult> CheckUserNameExists([FromQuery] string userName)
     {
         UserNameExistsDto isUserNameExists = await userService.CheckUserNameExists(userName);
-        return new Response<UserNameExistsDto>()
-        {
-            Data = isUserNameExists,
-            Succeeded = true,
-            Errors = [],
-            Message = isUserNameExists.IsUserNameExists ? "Username already Exists." : "Username doesn't exists.",
-            StatusCode = System.Net.HttpStatusCode.OK
-        };
+
+        return Success(isUserNameExists, isUserNameExists.IsUserNameExists ? "Username already Exists." : "Username doesn't exists.");
     }
 }
