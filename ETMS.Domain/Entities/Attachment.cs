@@ -35,9 +35,11 @@ public class Attachment : BaseEntity
     public DateTime? VirusScanDate { get; set; }
 
     // Polymorphic relationships (similar to comments)
-    public int TaskId { get; set; }
+    public int ProjectTaskId { get; set; }
     public ProjectTask? Task { get; set; }
 
+    public int ProjectId { get; set; }
+    public Project? Project { get; set; }
 
     // Optional metadata
     [MaxLength(1000)]

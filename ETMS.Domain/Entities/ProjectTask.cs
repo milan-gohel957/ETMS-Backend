@@ -11,14 +11,18 @@ public class ProjectTask : BaseEntity
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     [ForeignKey("Status")]
+    [Required]
     public int StatusId { get; set; } = (int)StatusEnum.Pending;
     public Status? Status { get; set; }
+    [Required]
     public int BoardId { get; set; }
     public Board? Board { get; set; }
     public List<UserTask> UserTasks { get; set; } = [];
     public List<Comment> Comments { get; set; } = [];
     public List<Attachment> Attachments { get; set; } = [];
-
+    [Required]
+    public int ProjectId { get; set; } 
+    public Project? Project { get; set; } = null;
     public int Order { get; set; }
 
     [ForeignKey("CreatedByUser")]

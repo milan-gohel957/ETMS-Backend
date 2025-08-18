@@ -1,18 +1,20 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace ETMS.Domain.Entities;
 
 
+[Index(nameof(ProjectId), nameof(RoleId), nameof(UserId), IsUnique = true)]
 public class UserProjectRole : BaseEntity
 {
     public int ProjectId { get; set; }
-    public Project? Project { get; set; } 
+    public Project? Project { get; set; }
 
     public int RoleId { get; set; }
-    public Role? Role { get; set; } 
+    public Role? Role { get; set; }
 
     public int UserId { get; set; }
-    public User? User { get; set; } 
+    public User? User { get; set; }
 
     [NotMapped]
     [ForeignKey("CreatedByUser")]

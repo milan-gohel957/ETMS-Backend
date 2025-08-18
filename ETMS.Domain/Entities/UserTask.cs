@@ -1,7 +1,9 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace ETMS.Domain.Entities;
 
+[Index(nameof(UserId), nameof(ProjectTaskId), IsUnique = true)]
 public class UserTask : BaseEntity
 {
     public int UserId { get; set; }

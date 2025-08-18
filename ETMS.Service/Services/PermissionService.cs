@@ -19,8 +19,8 @@ public class PermissionService(IUnitOfWork unitOfWork, IMemoryCache memoryCache)
 
         // Single query with all necessary joins
         var hasPermission = await rolePermissionRepo.AnyAsync(rp =>
-            rp.Role.UserRoles.Any(ur => ur.UserId == userId) &&
-            rp.Permission.Name == permission);
+            rp.Role!.UserRoles.Any(ur => ur.UserId == userId) &&
+            rp.Permission!.Name == permission);
 
         return hasPermission;
     }
@@ -37,11 +37,11 @@ public class PermissionService(IUnitOfWork unitOfWork, IMemoryCache memoryCache)
 
         foreach (var user in userRoles)
         {
-            var rolePermission = await rolePermissionRepo.GetAllWithIncludesAsync(x => x.RoleId == user.RoleId, includes:y => y.Permission);
+            var rolePermission = await rolePermissionRepo.GetAllWithIncludesAsync(x => x.RoleId == user.RoleId, includes:y => y.Permission!);
 
             foreach (var role in rolePermission)
             {
-                userPermissions.Add(role.Permission.Name);
+                userPermissions.Add(role.Permission!.Name);
             }
         }
 
@@ -66,7 +66,7 @@ public class PermissionService(IUnitOfWork unitOfWork, IMemoryCache memoryCache)
         UserProjectRole? userProjectRole = await userProjectRoleRepo.FirstOrDefaultAsync(upr => upr.ProjectId == projectId && upr.UserId == userId);
         if (userProjectRole == null) return false;
 
-        bool hasPermission = await rolePermissionRepo.AnyAsync(rp => rp.RoleId == userProjectRole.RoleId && rp.Permission.Name == permission);
+        bool hasPermission = await rolePermissionRepo.AnyAsync(rp => rp.RoleId == userProjectRole.RoleId && rp.Permission!.Name == permission);
 
         memoryCache.Set(cacheKey, hasPermission, TimeSpan.FromHours(1));
 
@@ -98,7 +98,7 @@ public class PermissionService(IUnitOfWork unitOfWork, IMemoryCache memoryCache)
         var permissions = (await unitOfWork.GetRepository<RolePermission>()
             .GetAllAsync(rp => rp.RoleId == userProjectRole.RoleId))
             .ToList()
-            .Select(rp => rp.Permission.Name);
+            .Select(rp => rp.Permission!.Name);
 
         // Cache the result
         memoryCache.Set(cacheKey, permissions,

@@ -8,10 +8,13 @@ public class Comment : BaseEntity
 
     [Required(AllowEmptyStrings = false, ErrorMessage = "Comment is Required.")]
     public string CommentString { get; set; } = string.Empty;
-    public int? TaskId { get; set; }
-    public ProjectTask? Task { get; set; }
-    public int? ProjectId { get; set; }
+    [Required]
+    public int ProjectId { get; set; }
     public Project? Project { get; set; }
+    [Required]
+    public int ProjectTaskId { get; set; }
+    public ProjectTask? ProjectTask { get; set; }
+    [Required]
     public int UserId { get; set; }
     public User? User { get; set; }
 
@@ -22,4 +25,5 @@ public class Comment : BaseEntity
     [ForeignKey("UpdatedByUser")]
     public int? UpdatedByUserId { get; set; }
     public User? UpdatedByUser { get; set; }
+    public List<CommentMention>? CommentMentions{ get; set; } 
 }

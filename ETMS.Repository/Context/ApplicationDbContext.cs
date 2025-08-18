@@ -28,6 +28,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> dbConte
 
         // CRITICAL: Configure relationships BEFORE ApplyConfigurationsFromAssembly
 
+
         // 1. UserTask configuration
         modelBuilder.Entity<UserTask>()
             .HasKey(ut => new { ut.UserId, ut.ProjectTaskId });
@@ -48,6 +49,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> dbConte
         modelBuilder.Entity<ProjectTask>(entity =>
         {
             entity.ToTable("Tasks");
+
+            entity.Property(t => t.ProjectId).HasDefaultValue(1);
 
             entity.HasOne(t => t.Board)
                 .WithMany(b => b.Tasks)
@@ -77,8 +80,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> dbConte
 
             entity.HasMany(t => t.Attachments)
                 .WithOne(a => a.Task)
-                .HasForeignKey(a => a.TaskId)
+                .HasForeignKey(a => a.ProjectTaskId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(t => t.Project)
+                .WithMany()
+                .HasForeignKey(t => t.ProjectId) // Assuming 'ProjectId' is the foreign key
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         // 3. Board configuration
@@ -123,10 +131,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> dbConte
             entity.HasMany(p => p.Comments)
                 .WithOne()
                 .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasMany(p => p.Attachments)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
         });
 
 
@@ -156,13 +160,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> dbConte
             entity.HasOne(c => c.Project)
                 .WithMany(p => p.Comments)
                 .HasForeignKey(c => c.ProjectId)
-                .IsRequired(false)  // Nullable because it might belong to Task instead
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasOne(c => c.Task)
+            entity.HasOne(c => c.ProjectTask)
                 .WithMany(t => t.Comments)
-                .HasForeignKey(c => c.TaskId)
-                .IsRequired(false)  // Nullable because it might belong to Project instead
+                .HasForeignKey(c => c.ProjectTaskId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // User relationship (who made the comment)
@@ -183,9 +185,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> dbConte
                 .HasForeignKey(c => c.UpdatedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Optional: Add a check constraint to ensure only one parent is set
-            entity.ToTable("CK_Comment_OneParent",
-                "([ProjectId] IS NOT NULL AND [TaskId] IS NULL) OR ([ProjectId] IS NULL AND [TaskId] IS NOT NULL)");
+            
         });
 
         // 6. ATTACHMENT CONFIGURATION - Similar polymorphic pattern
@@ -194,7 +194,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> dbConte
 
             entity.HasOne(a => a.Task)
                 .WithMany(t => t.Attachments)
-                .HasForeignKey(a => a.TaskId)
+                .HasForeignKey(a => a.ProjectTaskId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -216,9 +216,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> dbConte
                 .HasForeignKey(a => a.UpdatedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Optional: Add a check constraint
-            entity.ToTable(t => t.HasCheckConstraint("CK_Attachment_OneParent",
-                "([ProjectId] IS NOT NULL AND [TaskId] IS NULL) OR ([ProjectId] IS NULL AND [TaskId] IS NOT NULL)"));
         });
         // 9. Milestone configuration
         modelBuilder.Entity<Milestone>(entity =>
@@ -253,7 +250,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> dbConte
                 .WithMany(p => p.UserProjectRoles)
                 .HasForeignKey(p => p.ProjectId)
                 .OnDelete(DeleteBehavior.Restrict);
+
         });
+
 
         // 11. Permission configuration
         modelBuilder.Entity<Permission>(entity =>

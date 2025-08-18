@@ -11,20 +11,10 @@ public class ProjectPermissionHandler(IPermissionService permissionService, IHtt
     {
         var user = context.User;
         var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
         if (userId != null)
         {
-            var projectIdString = httpContext.HttpContext.Request.RouteValues["projectId"]?.ToString()
-                             ?? httpContext.HttpContext.Request.Query["projectId"].ToString();
-
-            if (!int.TryParse(projectIdString, out var projectId))
-            {
-                context.Fail(new AuthorizationFailureReason(this, "Project ID not found in request."));
-                return;
-            }
-            bool hasPermission = await permissionService.HasPermissionAsync(
-                int.Parse(userId),
-                projectId,
+            bool hasPermission = await permissionService.UserHasPermissionAsync(
+                userId:int.Parse(userId),
                 requirement.Permission
             );
 

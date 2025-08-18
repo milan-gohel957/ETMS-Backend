@@ -1,9 +1,7 @@
 using System.Security.Claims;
 using ETMS.Service.DTOs;
 using ETMS.Service.Exceptions;
-
 using ETMS.Service.Services.Interfaces;
-using ETMS.Web.Filters;
 using Microsoft.AspNetCore.Mvc;
 using static ETMS.Domain.Enums.Enums;
 
@@ -38,6 +36,13 @@ public class ProjectController(IProjectService projectService) : BaseApiControll
         return Success<object>(null, "Project updated successfully.");
     }
 
+    [HttpPost("{projectId:int}/users")]
+    public async Task<IActionResult> AddUsersToProject(int projectId, AddUsersToProjectDto addUsersToProjectDto)
+    {
+        await projectService.AddUsersToProject(projectId, addUsersToProjectDto);
+        return Success("Users Added to Project!");
+    }
+    
     [HttpPost]
     public async Task<IActionResult> CreateProject(CreateProjectDto createProjectDto)
     {

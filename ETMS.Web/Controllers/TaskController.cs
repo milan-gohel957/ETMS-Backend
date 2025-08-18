@@ -1,8 +1,11 @@
+using System.Security.Claims;
 using ETMS.Domain.Common;
 using ETMS.Service.DTOs;
+using ETMS.Service.Exceptions;
 using ETMS.Service.Services.Interfaces;
 using ETMS.Web.Filters;
 using Microsoft.AspNetCore.Mvc;
+using static ETMS.Domain.Enums.Enums;
 
 namespace ETMS.Web.Controllers;
 
@@ -13,6 +16,7 @@ public class TaskController(ITaskService taskService) : BaseApiController
     [HttpPost]
     public async Task<IActionResult> CreateProjectTask(CreateTaskDto createTaskDto)
     {
+        createTaskDto.CreatedByUserId = GetCurrentUserId();
         TaskDto taskDto = await taskService.CreateTaskAsync(createTaskDto);
         return Success(taskDto);
     }
@@ -27,8 +31,16 @@ public class TaskController(ITaskService taskService) : BaseApiController
     [HttpDelete("{boardId}/{taskId}")]
     public async Task<IActionResult> DeleteTask(int boardId, int taskId)
     {
-        await taskService.DeleteTask(boardId, taskId);
-        return Success<object>(null, "Task deleted successfully.");
+        int userId = GetCurrentUserId();
+        await taskService.DeleteTask(boardId, taskId, userId);
+        return Success("Task deleted successfully.");
+    }
+
+    [HttpPost("{taskId:int}/assignees")]
+    public async Task<IActionResult> AssignTaskToUsers(int taskId, AssignTaskUserDto assignTaskUserDto)
+    {
+        await taskService.AssignTaskToUsers(taskId, assignTaskUserDto);
+        return Success("Task Assigned Successfully!");
     }
 
     [HttpPost("shift-range")]
@@ -40,6 +52,7 @@ public class TaskController(ITaskService taskService) : BaseApiController
     [HttpPatch("update-positions")]
     public async Task<IActionResult> UpdateTaskPositionsAsync([FromBody] UpdateTaskPositionDto updateTaskPositionDto)
     {
+        updateTaskPositionDto.UpdatedByUserId = GetCurrentUserId();
         await taskService.UpdateTaskPositionsAsync(updateTaskPositionDto);
         return Success<object>(null, "Task Position Updated Successfully.");
     }
@@ -47,6 +60,8 @@ public class TaskController(ITaskService taskService) : BaseApiController
     [HttpPost("move/{taskId:int}")]
     public async Task<IActionResult> MoveTaskAsync([FromBody] MoveTaskDto moveTaskDto, int taskId)
     {
+        moveTaskDto.UpdatedByUserId = GetCurrentUserId();
+
         await taskService.MoveTaskAsync(moveTaskDto, taskId);
         return Success("Task moved successfully.");
     }
@@ -54,7 +69,22 @@ public class TaskController(ITaskService taskService) : BaseApiController
     [HttpPut("{taskId}")]
     public async Task<IActionResult> UpdateTask(int taskId, [FromBody] UpdateTaskDto taskDto)
     {
-        await taskService.UpdateTaskAsync(taskDto.BoardId, taskId,taskDto);
+        taskDto.UpdatedByUserId = GetCurrentUserId();
+        
+        await taskService.UpdateTaskAsync(taskDto.BoardId, taskId, taskDto);
         return Success<object>(null, "Task updated successfully.");
+    }
+
+    private int GetCurrentUserId()
+    {
+        var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out var userId))
+        {
+            // Throwing an exception is better here, as your filter will handle it
+            throw new ResponseException(EResponse.Unauthorized, "Invalid user identifier in token.");
+        }
+
+        return userId;
     }
 }

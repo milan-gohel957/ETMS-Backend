@@ -14,6 +14,7 @@ public class TaskProfile : Profile, IAutoMapperProfile
 
         CreateMap<CreateTaskDto, ProjectTask>()
           .ForMember(dest => dest.Status, opt => opt.Ignore());
+
         CreateMap<UpdateTaskDto, ProjectTask>()
            .ForMember(dest => dest.Status, opt => opt.Ignore());
     }

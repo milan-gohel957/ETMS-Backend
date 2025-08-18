@@ -5,4 +5,6 @@ public class UpdateTaskPositionDto
     public int TaskId { get; set; }
     public int NewBoardId { get; set; }
     public int NewPosition { get; set; }
+
+    public int? UpdatedByUserId{ get; set; }
 }

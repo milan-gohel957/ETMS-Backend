@@ -10,25 +10,23 @@ namespace ETMS.Service.Services;
 
 public class ProjectService(IUnitOfWork unitOfWork, IMapper mapper) : IProjectService
 {
-    private IGenericRepository<Project>? _projectRepo;
-    private IGenericRepository<Project> ProjectRepo => _projectRepo ??= unitOfWork.GetRepository<Project>();
+    private IGenericRepository<Project> _projectRepository = unitOfWork.GetRepository<Project>();
 
-    private IGenericRepository<UserProjectRole>? _userProjectRoleRepo;
-
-    private IGenericRepository<UserProjectRole> UserProjectRoleRepo => _userProjectRoleRepo ??= unitOfWork.GetRepository<UserProjectRole>();
+    private IGenericRepository<UserProjectRole> _userProjectRoleRepository = unitOfWork.GetRepository<UserProjectRole>();
+    private IGenericRepository<User> _userRepository = unitOfWork.GetRepository<User>();
 
     private readonly IGenericRepository<Board> _boardRepository = unitOfWork.GetRepository<Board>();
 
     //Get user's project list just requires to be authorized
     public async Task<IEnumerable<ProjectDto>> GetUserProjectsAsync(int userId)
     {
-        var projects = (await UserProjectRoleRepo.GetAllWithIncludesAsync(upr => upr.UserId == userId, includes: upr => upr.Project)).Select(p => p.Project);
+        var projects = (await _userProjectRoleRepository.GetAllWithIncludesAsync(upr => upr.UserId == userId, includes: upr => upr.Project)).Select(p => p.Project);
         return mapper.Map<IEnumerable<ProjectDto>>(projects);
     }
 
     public async Task<ProjectDto?> GetProjectByIdAsync(int projectId)
     {
-        Project? project = await ProjectRepo.FirstOrDefaultAsync(p => p.Id == projectId);
+        Project? project = await _projectRepository.FirstOrDefaultAsync(p => p.Id == projectId);
 
         if (project == null) throw new ResponseException(EResponse.NotFound, "Project Not Found");
 
@@ -37,33 +35,33 @@ public class ProjectService(IUnitOfWork unitOfWork, IMapper mapper) : IProjectSe
 
     public async Task DeleteProjectAsync(int projectId)
     {
-        bool isProjectExists = await ProjectRepo.ExistsAsync(projectId);
+        bool isProjectExists = await _projectRepository.ExistsAsync(projectId);
         if (!isProjectExists) throw new ResponseException(EResponse.NotFound, "Project Not Found");
 
-        await ProjectRepo.SoftDeleteByIdAsync(projectId);
+        await _projectRepository.SoftDeleteByIdAsync(projectId);
 
-        IEnumerable<UserProjectRole> userProjectRoles = await UserProjectRoleRepo.GetAllAsync(upr => upr.ProjectId == projectId);
-        UserProjectRoleRepo.SoftDeleteRange(userProjectRoles);
+        IEnumerable<UserProjectRole> userProjectRoles = await _userProjectRoleRepository.GetAllAsync(upr => upr.ProjectId == projectId);
+        _userProjectRoleRepository.SoftDeleteRange(userProjectRoles);
 
         await unitOfWork.SaveChangesAsync();
     }
 
     public async Task UpdateProjectAsync(int id, UpdateProjectDto projectDto)
     {
-        Project? dbProject = await ProjectRepo.GetByIdAsync(id) ?? throw new ResponseException(EResponse.NotFound, "Project Not Found");
+        Project? dbProject = await _projectRepository.GetByIdAsync(id) ?? throw new ResponseException(EResponse.NotFound, "Project Not Found");
 
         mapper.Map(projectDto, dbProject);
 
-        ProjectRepo.Update(dbProject);
+        _projectRepository.Update(dbProject);
         await unitOfWork.SaveChangesAsync();
     }
 
     public async Task<ProjectDto> CreateProjectAsync(CreateProjectDto projectDto)
     {
-        Project addedProject = await ProjectRepo.AddAsync(mapper.Map<Project>(projectDto));
+        Project addedProject = await _projectRepository.AddAsync(mapper.Map<Project>(projectDto));
         await unitOfWork.SaveChangesAsync();
         //Project Creator is adming by default 
-        await UserProjectRoleRepo.AddAsync(
+        await _userProjectRoleRepository.AddAsync(
             new()
             {
                 ProjectId = addedProject.Id,
@@ -80,6 +78,42 @@ public class ProjectService(IUnitOfWork unitOfWork, IMapper mapper) : IProjectSe
 
 
     }
+    public async Task AddUsersToProject(int projectId, AddUsersToProjectDto addUsersToProjectDto)
+    {
+        // TODO: Check that if user has permission to add the users in the project 
+
+        // First, check if the project exists.
+        Project project = await _projectRepository.GetByIdAsync(projectId)
+            ?? throw new ResponseException(EResponse.NotFound, $"Project With Id {projectId} not found");
+
+        //Check all user exists 
+        var newUserIdsToAdd = addUsersToProjectDto.UserRoles.Select(u => u.UserId);
+        bool allUsersExist = newUserIdsToAdd.All(id => _userRepository.Table.Any(u => u.Id == id));
+        if (!allUsersExist)
+            throw new ResponseException(EResponse.NotFound, "Some of the Users Doesn't exists");
+        
+        // Get existing users for the project to avoid duplicates.
+            var existingUserIds = (await _userProjectRoleRepository
+            .GetAllAsync(upr => upr.ProjectId == projectId))
+            .Select(upr => upr.UserId);
+
+        // Filter out users who are already in the project.
+        var newUsersToAdd = addUsersToProjectDto.UserRoles
+            .Where(ur => !existingUserIds.Contains(ur.UserId))
+            .Select(ur => new UserProjectRole()
+            {
+                RoleId = ur.RoleId,
+                UserId = ur.UserId,
+                ProjectId = projectId
+            });
+
+        if (newUsersToAdd.Any())
+        {
+            await _userProjectRoleRepository.AddRangeAsync(newUsersToAdd);
+            await unitOfWork.SaveChangesAsync();
+        }
+    }
+
 
     public static IEnumerable<Board> GetDefaultBoards(int createdbyUserId, int projectId)
     {

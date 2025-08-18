@@ -5,15 +5,21 @@ using ETMS.Repository.Repositories.Interfaces;
 using ETMS.Service.DTOs;
 using ETMS.Service.Exceptions;
 using ETMS.Service.Services.Interfaces;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using static ETMS.Domain.Enums.Enums;
 
 namespace ETMS.Service.Services;
 
-public class TaskService(IUnitOfWork unitOfWork, IMapper mapper) : ITaskService
+public class TaskService(IUnitOfWork unitOfWork, IMapper mapper, IPermissionService permissionService) : ITaskService
 {
     IGenericRepository<ProjectTask> _taskRepository = unitOfWork.GetRepository<ProjectTask>();
+    IGenericRepository<UserTask> _userTaskRepository = unitOfWork.GetRepository<UserTask>();
     IGenericRepository<Board> _boardRepository = unitOfWork.GetRepository<Board>();
+    IGenericRepository<Project> _projectRepository = unitOfWork.GetRepository<Project>();
+    IGenericRepository<User> _userRepository = unitOfWork.GetRepository<User>();
+    IGenericRepository<UserProjectRole> _userProjectRoleRepository = unitOfWork.GetRepository<UserProjectRole>();
+    IPermissionService _permissionService = permissionService;
     public async Task<IEnumerable<TaskDto>> GetTasksByBoardIdAsync(int boardId)
     {
         bool isBoardExists = await _boardRepository.ExistsAsync(boardId);
@@ -23,16 +29,17 @@ public class TaskService(IUnitOfWork unitOfWork, IMapper mapper) : ITaskService
         return mapper.Map<IEnumerable<TaskDto>>(await _taskRepository.GetAllAsync(t => t.BoardId == boardId));
     }
 
-    public async Task DeleteTask(int boardId, int taskId)
+    public async Task DeleteTask(int boardId, int taskId, int userId)
     {
         bool isBoardExists = await _boardRepository.ExistsAsync(boardId);
         if (!isBoardExists)
             throw new ResponseException(EResponse.NotFound, "Board Not Found.");
 
-        bool isTaskExists = await _taskRepository.AnyAsync(t => t.Id == taskId && t.BoardId == boardId);
+        ProjectTask? task = await _taskRepository.FirstOrDefaultAsync(t => t.Id == taskId && t.BoardId == boardId) ?? throw new ResponseException(EResponse.NotFound, $"Task With {taskId} not found in the board with id {boardId}.");
 
-        if (!isTaskExists)
-            throw new ResponseException(EResponse.NotFound, "Task Not Found");
+        //Check if user has permission to delete the task
+        if (!await _permissionService.HasPermissionAsync(userId: userId, projectId: task.ProjectId, "CanDeleteTask"))
+            throw new ResponseException(EResponse.Forbidden, "User is not allowed to perform this action.");
 
         await _taskRepository.SoftDeleteByIdAsync(taskId);
     }
@@ -54,6 +61,15 @@ public class TaskService(IUnitOfWork unitOfWork, IMapper mapper) : ITaskService
     }
     public async Task<TaskDto> CreateTaskAsync(CreateTaskDto createTaskDto)
     {
+        bool isProjectExist = await _projectRepository.ExistsAsync(createTaskDto.ProjectId);
+        if (!isProjectExist)
+            throw new ResponseException(EResponse.NotFound, $"Project With {createTaskDto.ProjectId} Not found");
+
+        bool isBoardExists = await _boardRepository.ExistsAsync(createTaskDto.BoardId);
+
+        if (!isBoardExists)
+            throw new ResponseException(EResponse.NotFound, $"Board with {createTaskDto.BoardId} Not Found");
+
         //Using queryable to optimize the order calculation based on the provided order and addedAtEndOfBoard flag.
         IQueryable<ProjectTask> task = _taskRepository.Table;
         if (createTaskDto.IsAddedAtEndOfBoard)
@@ -201,6 +217,61 @@ public class TaskService(IUnitOfWork unitOfWork, IMapper mapper) : ITaskService
             // If any error occurred during the process, roll back all changes.
             await unitOfWork.RollbackAsync();
             throw; // Re-throw the exception to be handled by global error handling.
+        }
+    }
+    public async Task AssignTaskToUsers(int taskId, AssignTaskUserDto assignUsersToTaskDto)
+    {
+        // First, validate if the task exists.
+        ProjectTask task = await _taskRepository.GetByIdAsync(taskId)
+            ?? throw new ResponseException(EResponse.NotFound, $"Task with ID {taskId} not found.");
+
+        bool allUsersExist = assignUsersToTaskDto.UserIds.All(id => _userRepository.Table.Any(u => u.Id == id));
+        if (!allUsersExist)
+            throw new ResponseException(EResponse.NotFound, "Some of the Users Doesn't exists");
+
+        // IMPORTANT: Check if the users belong to the task's project.
+        // Assuming you have a way to query UserProjectRole table to check for this relationship.
+        var projectUsers = (await _userProjectRoleRepository.GetAllAsync(upr => upr.ProjectId == task.ProjectId)).Select(upr => upr.UserId);
+
+        var userIdsToAssign = assignUsersToTaskDto.UserIds.ToList();
+        var invalidUserIds = userIdsToAssign.Except(projectUsers).ToList();
+
+        if (invalidUserIds.Any())
+        {
+            throw new ResponseException(EResponse.BadRequest,
+                $"The following user(s) are not members of the project: {string.Join(", ", invalidUserIds)}.");
+        }
+
+        // Check if the users being assigned actually exist in the system.
+        var existingUsers = await _userRepository.Table.Where(u => userIdsToAssign.Contains(u.Id)).ToListAsync();
+
+        if (existingUsers.Count != userIdsToAssign.Count)
+        {
+            var missingUserIds = userIdsToAssign.Except(existingUsers.Select(u => u.Id));
+            throw new ResponseException(EResponse.BadRequest, $"The following user(s) could not be found: {string.Join(", ", missingUserIds)}.");
+        }
+
+        // Create all UserTask entities from the DTO.
+        var newAssignments = userIdsToAssign
+            .Select(userId => new UserTask
+            {
+                ProjectTaskId = taskId,
+                UserId = userId
+            })
+            .ToList();
+
+        try
+        {
+            await _userTaskRepository.AddRangeAsync(newAssignments);
+            await unitOfWork.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex)
+        {
+            if (ex.InnerException is SqlException sqlEx && sqlEx.Number == 2627)
+            {
+                throw new ResponseException(EResponse.Conflict, "One or more users are already assigned to this task.");
+            }
+            throw;
         }
     }
 }
