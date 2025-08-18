@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ETMS.Domain.Entities;
@@ -9,6 +10,7 @@ public class RolePermission : BaseEntity
     [ForeignKey("Permission")]
     public int PermissionId { get; set; }
     public virtual Role? Role { get; set; } = null;
-    public virtual Permission? Permission { get; set; } 
-    
+    public virtual Permission? Permission { get; set; }
+    [Required]
+    public bool IsActive = false;
 }

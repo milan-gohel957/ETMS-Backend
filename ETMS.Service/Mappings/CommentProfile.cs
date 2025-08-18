@@ -14,5 +14,11 @@ public class CommentProfile : Profile, IAutoMapperProfile
         CreateMap<CreateCommentDto, Comment>();
 
         CreateMap<UpdateCommentDto, Comment>();
+
+        CreateMap<CommentMention, CommentMentionDto>()
+         .ForMember(dest => dest.CurrentUserName,
+                    opt => opt.MapFrom(src => src.User!.UserName)) // take username from navigation property
+         .ForMember(dest => dest.UserId,
+                    opt => opt.MapFrom(src => src.UserId));
     }
 }

@@ -4,6 +4,7 @@ using ETMS.Repository.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ETMS.Repository.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250818100253_RolePermissionIsActive")]
+    partial class RolePermissionIsActive
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -614,7 +617,7 @@ namespace ETMS.Repository.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 8, 18, 10, 14, 47, 210, DateTimeKind.Utc).AddTicks(7879),
+                            CreatedAt = new DateTime(2025, 8, 18, 10, 2, 51, 391, DateTimeKind.Utc).AddTicks(8433),
                             Description = "This is Admin Role. It will have all the permissions.",
                             IsDeleted = false,
                             Name = "Admin"
@@ -622,7 +625,7 @@ namespace ETMS.Repository.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 8, 18, 10, 14, 47, 210, DateTimeKind.Utc).AddTicks(8022),
+                            CreatedAt = new DateTime(2025, 8, 18, 10, 2, 51, 391, DateTimeKind.Utc).AddTicks(8545),
                             Description = "This is Program Manger Role.",
                             IsDeleted = false,
                             Name = "Program Manager"
@@ -630,7 +633,7 @@ namespace ETMS.Repository.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2025, 8, 18, 10, 14, 47, 210, DateTimeKind.Utc).AddTicks(8055),
+                            CreatedAt = new DateTime(2025, 8, 18, 10, 2, 51, 391, DateTimeKind.Utc).AddTicks(8571),
                             Description = "This is Project Manger Role.",
                             IsDeleted = false,
                             Name = "Project Manager"
@@ -638,7 +641,7 @@ namespace ETMS.Repository.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2025, 8, 18, 10, 14, 47, 210, DateTimeKind.Utc).AddTicks(8080),
+                            CreatedAt = new DateTime(2025, 8, 18, 10, 2, 51, 391, DateTimeKind.Utc).AddTicks(8592),
                             Description = "This is Team Lead Role.",
                             IsDeleted = false,
                             Name = "Team Lead"
@@ -646,7 +649,7 @@ namespace ETMS.Repository.Migrations
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(2025, 8, 18, 10, 14, 47, 210, DateTimeKind.Utc).AddTicks(8101),
+                            CreatedAt = new DateTime(2025, 8, 18, 10, 2, 51, 391, DateTimeKind.Utc).AddTicks(8610),
                             Description = "This is Senior Developer Role.",
                             IsDeleted = false,
                             Name = "Senior Developer"
@@ -654,7 +657,7 @@ namespace ETMS.Repository.Migrations
                         new
                         {
                             Id = 6,
-                            CreatedAt = new DateTime(2025, 8, 18, 10, 14, 47, 210, DateTimeKind.Utc).AddTicks(8122),
+                            CreatedAt = new DateTime(2025, 8, 18, 10, 2, 51, 391, DateTimeKind.Utc).AddTicks(8630),
                             Description = "This is Junior Developer Role.",
                             IsDeleted = false,
                             Name = "Junior Developer"
@@ -662,7 +665,7 @@ namespace ETMS.Repository.Migrations
                         new
                         {
                             Id = 7,
-                            CreatedAt = new DateTime(2025, 8, 18, 10, 14, 47, 210, DateTimeKind.Utc).AddTicks(8143),
+                            CreatedAt = new DateTime(2025, 8, 18, 10, 2, 51, 391, DateTimeKind.Utc).AddTicks(8649),
                             Description = "This is default User Role.",
                             IsDeleted = false,
                             Name = "User"
@@ -738,7 +741,7 @@ namespace ETMS.Repository.Migrations
                         {
                             Id = 1,
                             ColorCode = "",
-                            CreatedAt = new DateTime(2025, 8, 18, 10, 14, 47, 210, DateTimeKind.Utc).AddTicks(7533),
+                            CreatedAt = new DateTime(2025, 8, 18, 10, 2, 51, 391, DateTimeKind.Utc).AddTicks(8261),
                             IsDeleted = false,
                             Name = "Pending"
                         },
@@ -746,7 +749,7 @@ namespace ETMS.Repository.Migrations
                         {
                             Id = 2,
                             ColorCode = "",
-                            CreatedAt = new DateTime(2025, 8, 18, 10, 14, 47, 210, DateTimeKind.Utc).AddTicks(7538),
+                            CreatedAt = new DateTime(2025, 8, 18, 10, 2, 51, 391, DateTimeKind.Utc).AddTicks(8268),
                             IsDeleted = false,
                             Name = "Completed"
                         });

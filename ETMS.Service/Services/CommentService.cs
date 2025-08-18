@@ -5,6 +5,7 @@ using ETMS.Repository.Repositories.Interfaces;
 using ETMS.Service.DTOs;
 using ETMS.Service.Exceptions;
 using ETMS.Service.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using static ETMS.Domain.Enums.Enums;
 
 namespace ETMS.Service.Services;
@@ -20,6 +21,7 @@ public class CommentService(IUnitOfWork unitOfWork, IMapper mapper, IPermissionS
     public async Task<CommentDto> CreateCommentAsync(CreateCommentDto createCommentDto)
     {
         //TODO: Set UserId from controller
+        CommentDto commentDto = new();
         ProjectTask? dbTask = await _taskRepository.GetByIdAsync(createCommentDto.ProjectTaskId) ?? throw new ResponseException(EResponse.NotFound, $"Task With {createCommentDto.ProjectTaskId} not found.");
 
         bool canCreateComment = await _permissionService.HasPermissionAsync(
@@ -33,13 +35,16 @@ public class CommentService(IUnitOfWork unitOfWork, IMapper mapper, IPermissionS
 
         var comment = mapper.Map<Comment>(createCommentDto);
 
+        comment.ProjectId = dbTask.ProjectId;
+
         Comment addedComment = await _commentRepository.AddAsync(comment);
+        await unitOfWork.SaveChangesAsync();
 
         List<string> mentions = FindMentions(createCommentDto.CommentString);
 
         for (int i = 0; i < mentions.Count; i++)
         {
-            User? user = await _userRepository.FirstOrDefaultAsync(y => y.UserName == mentions[i]);
+            User? user = await _userRepository.FirstOrDefaultAsync(y => y.UserName == mentions[i].Substring(1));
             if (user == null) continue;
             CommentMention commentMention = new()
             {
@@ -47,11 +52,19 @@ public class CommentService(IUnitOfWork unitOfWork, IMapper mapper, IPermissionS
                 CommentId = addedComment.Id,
             };
 
+            commentDto.Mentions.Add(new CommentMentionDto()
+            {
+                CurrentUserName = user.UserName,
+                UserId = user.Id
+            });
+
             await _commentMentionsRepository.AddAsync(commentMention);
         }
-
         await unitOfWork.SaveChangesAsync();
-        return mapper.Map<CommentDto>(addedComment);
+
+        mapper.Map(addedComment, commentDto);
+
+        return commentDto;
     }
 
     private static List<string> FindMentions(string text)
@@ -113,7 +126,10 @@ public class CommentService(IUnitOfWork unitOfWork, IMapper mapper, IPermissionS
     }
     public async Task<IEnumerable<CommentDto>> GetCommentsByTaskId(int taskId)
     {
-        IEnumerable<Comment> comments = await _commentRepository.GetAllWithIncludesAsync(c => c.ProjectTaskId == taskId, includes: c => c.CommentMentions!);
+        var commentsTable = _commentRepository.Table;
+
+        IEnumerable<Comment> comments = await commentsTable.Include(c => c.CommentMentions!).ThenInclude(cm => cm.User).Where(c => c.ProjectTaskId == taskId).ToListAsync();
+
         return mapper.Map<IEnumerable<CommentDto>>(comments);
     }
 }
