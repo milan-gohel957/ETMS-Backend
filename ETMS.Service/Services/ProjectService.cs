@@ -8,7 +8,7 @@ using static ETMS.Domain.Enums.Enums;
 
 namespace ETMS.Service.Services;
 
-public class ProjectService(IUnitOfWork unitOfWork, IMapper mapper) : IProjectService
+public class ProjectService(IUnitOfWork unitOfWork, IMapper mapper, IPermissionService permissionService) : IProjectService
 {
     private IGenericRepository<Project> _projectRepository = unitOfWork.GetRepository<Project>();
 
@@ -24,19 +24,27 @@ public class ProjectService(IUnitOfWork unitOfWork, IMapper mapper) : IProjectSe
         return mapper.Map<IEnumerable<ProjectDto>>(projects);
     }
 
-    public async Task<ProjectDto?> GetProjectByIdAsync(int projectId)
+    public async Task<ProjectDto?> GetProjectByIdAsync(int projectId, int userId)
     {
         Project? project = await _projectRepository.FirstOrDefaultAsync(p => p.Id == projectId);
 
         if (project == null) throw new ResponseException(EResponse.NotFound, "Project Not Found");
 
+        bool hasPermission = await permissionService.HasPermissionAsync(userId, projectId, "Projects.Get");
+        if (!hasPermission)
+            throw new ResponseException(EResponse.Forbidden, "User Can't get this project.");
+
         return mapper.Map<ProjectDto>(project);
     }
 
-    public async Task DeleteProjectAsync(int projectId)
+    public async Task DeleteProjectAsync(int projectId, int userId)
     {
         bool isProjectExists = await _projectRepository.ExistsAsync(projectId);
         if (!isProjectExists) throw new ResponseException(EResponse.NotFound, "Project Not Found");
+
+        bool hasPermission = await permissionService.HasPermissionAsync(userId, projectId, "Projects.Delete");
+        if (!hasPermission)
+            throw new ResponseException(EResponse.Forbidden, "User Can't get this project.");
 
         await _projectRepository.SoftDeleteByIdAsync(projectId);
 
@@ -46,9 +54,13 @@ public class ProjectService(IUnitOfWork unitOfWork, IMapper mapper) : IProjectSe
         await unitOfWork.SaveChangesAsync();
     }
 
-    public async Task UpdateProjectAsync(int id, UpdateProjectDto projectDto)
+    public async Task UpdateProjectAsync(int projectId, UpdateProjectDto projectDto)
     {
-        Project? dbProject = await _projectRepository.GetByIdAsync(id) ?? throw new ResponseException(EResponse.NotFound, "Project Not Found");
+        Project? dbProject = await _projectRepository.GetByIdAsync(projectId) ?? throw new ResponseException(EResponse.NotFound, "Project Not Found");
+
+        bool hasPermission = await permissionService.HasPermissionAsync(projectDto.CreatedByUserId, projectId, "Projects.Delete");
+        if (!hasPermission)
+            throw new ResponseException(EResponse.Forbidden, "User Can't get this project.");
 
         mapper.Map(projectDto, dbProject);
 
@@ -56,10 +68,24 @@ public class ProjectService(IUnitOfWork unitOfWork, IMapper mapper) : IProjectSe
         await unitOfWork.SaveChangesAsync();
     }
 
+    public async Task<IEnumerable<UserDto>> GetProjectMembers(int projectId, int userId)
+    {
+        Project? project = await _projectRepository.GetByIdAsync(projectId) ?? throw new ResponseException(EResponse.NotFound, $"Project with Id {projectId} not found.");
+
+        bool hasPermission = await permissionService.HasPermissionAsync(userId, projectId, "Projects.Read");
+        if (!hasPermission)
+            throw new ResponseException(EResponse.Forbidden, "User Can't get this project.");
+
+        IEnumerable<User?> projectMembers = (await _userProjectRoleRepository.GetAllWithIncludesAsync(upr => upr.ProjectId == projectId, includes: upr => upr.User!)).Select(upr => upr.User);
+
+        return mapper.Map<IEnumerable<UserDto>>(projectMembers);
+    }
+
     public async Task<ProjectDto> CreateProjectAsync(CreateProjectDto projectDto)
     {
         Project addedProject = await _projectRepository.AddAsync(mapper.Map<Project>(projectDto));
         await unitOfWork.SaveChangesAsync();
+
         //Project Creator is adming by default 
         await _userProjectRoleRepository.AddAsync(
             new()
@@ -75,8 +101,6 @@ public class ProjectService(IUnitOfWork unitOfWork, IMapper mapper) : IProjectSe
         await unitOfWork.SaveChangesAsync();
 
         return mapper.Map<ProjectDto>(addedProject);
-
-
     }
     public async Task AddUsersToProject(int projectId, AddUsersToProjectDto addUsersToProjectDto)
     {
@@ -91,9 +115,9 @@ public class ProjectService(IUnitOfWork unitOfWork, IMapper mapper) : IProjectSe
         bool allUsersExist = newUserIdsToAdd.All(id => _userRepository.Table.Any(u => u.Id == id));
         if (!allUsersExist)
             throw new ResponseException(EResponse.NotFound, "Some of the Users Doesn't exists");
-        
+
         // Get existing users for the project to avoid duplicates.
-            var existingUserIds = (await _userProjectRoleRepository
+        var existingUserIds = (await _userProjectRoleRepository
             .GetAllAsync(upr => upr.ProjectId == projectId))
             .Select(upr => upr.UserId);
 

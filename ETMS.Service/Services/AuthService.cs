@@ -102,7 +102,7 @@ public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, I
                 "WelcomeLoginLink.html");
         // var templatePath = Path.Combine(basePath, "ETMS.Infrastructure", "EmailTemplates", "WelcomeLoginLink.html");
         var htmlTemplate = await File.ReadAllTextAsync(templatePath);
-        var SignInLink = $"{hostUri}/api/auth/magiclogin?token={randomToken}";
+        var SignInLink = $"{hostUri}/verify-user?token={randomToken}";
 
         htmlTemplate = htmlTemplate.Replace("{{SignInLink}}", SignInLink);
 
@@ -141,7 +141,7 @@ public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, I
         if (!user.IsVerifiedUser)
             throw new ResponseException(EResponse.BadRequest, "User has not verified their email.");
 
-        if (!HashHelper.VerifyPassword(user.PasswordHash, password))
+        if (!HashHelper.VerifyPassword(user.PasswordHash.Split(":").ElementAt(0), password))
             throw new ResponseException(EResponse.BadRequest, "Invalid credentials.");
 
         return await _generateAndSaveTokensAsync(user, loginRequestDto.UserHostAddress);
@@ -187,7 +187,7 @@ public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, I
     private async Task<LoginResponseDto> _generateAndSaveTokensAsync(User user, string? ipAddress)
     {
         // 1. Generate the access and refresh tokens
-        var (accessToken, accessExpiresAt) = tokenService.GenerateAccessToken(user);
+        var (accessToken, accessExpiresAt) = await tokenService.GenerateAccessToken(user);
         var (refreshToken, refreshExpiresAt, guid) = tokenService.GenerateRefreshToken();
 
         // 2. Create and save the new refresh token entity
@@ -265,7 +265,7 @@ public class AuthService(IUnitOfWork unitOfWork, IHostEnvironment environment, I
         if (dbUser == null)
             throw new ResponseException(EResponse.Unauthorized, "Invalid Token.");
 
-        var (newAccessToken, newAccessExpiresAt) = tokenService.GenerateAccessToken(dbUser);
+        var (newAccessToken, newAccessExpiresAt) = await tokenService.GenerateAccessToken(dbUser);
         var (newRefreshToken, newRefreshExpiresAt, newGuid) = tokenService.GenerateRefreshToken();
 
         userRefreshToken.UpdatedAt = DateTime.UtcNow;

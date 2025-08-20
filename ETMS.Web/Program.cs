@@ -51,8 +51,11 @@ builder.Services.AddCors(options =>
         });
 });
 
-builder.Services.AddEndpointsApiExplorer();
-
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Admin", policy =>
+        policy.RequireRole("Admin"));
+});
 
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, DynamicPolicyProvider>();
 builder.Services.AddSwaggerGen(c =>

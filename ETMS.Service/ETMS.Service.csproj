@@ -16,5 +16,6 @@
     <PackageReference Include="Google.Apis.Auth" Version="1.70.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="AutoWrapper.Core" Version="4.5.1" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
   </ItemGroup>
 </Project>

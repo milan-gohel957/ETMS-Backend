@@ -12,6 +12,5 @@ public interface ITaskService
     Task MoveTaskAsync(MoveTaskDto moveTaskDto, int taskId);
     Task UpdateTaskAsync(int boardId, int taskId, UpdateTaskDto updateTaskDto);
     Task AssignTaskToUsers(int taskId, AssignTaskUserDto assignUsersToTaskDto);
-
-
+    Task<IEnumerable<UserDto>> GetTaskMembersAsync(int taskId);
 }

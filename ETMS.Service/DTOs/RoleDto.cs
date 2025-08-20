@@ -2,10 +2,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ETMS.Service.DTOs;
 
-public class PermissionDto
+public class RoleDto : BaseEntityDto
 {
-    public int Id { get; set; }
-    [Required]
+    [Required(AllowEmptyStrings = false, ErrorMessage = "Name is Required.")]
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
+
 }

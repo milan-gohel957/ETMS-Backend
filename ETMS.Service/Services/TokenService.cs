@@ -1,7 +1,10 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 using ETMS.Domain.Entities;
+using ETMS.Repository.Repositories;
+using ETMS.Repository.Repositories.Interfaces;
 using ETMS.Service.DTOs;
 using ETMS.Service.Exceptions;
 using ETMS.Service.Services.Interfaces;
@@ -12,14 +15,18 @@ using static ETMS.Domain.Enums.Enums;
 namespace ETMS.Service.Services;
 
 
-public class TokenService(IOptions<JwtSettings> jwtSettings) : ITokenService
+public class TokenService(IOptions<JwtSettings> jwtSettings, IUnitOfWork unitOfWork) : ITokenService
 {
     private readonly JwtSettings _jwtSettings = jwtSettings.Value;
 
-    public (string token, DateTime expiresAt) GenerateAccessToken(User user)
+    private readonly IGenericRepository<UserRole> _userRolesRepository = unitOfWork.GetRepository<UserRole>();
+    public async Task<(string token, DateTime expiresAt)> GenerateAccessToken(User user)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+
+        IEnumerable<UserRole> userRoles = await _userRolesRepository.GetAllWithIncludesAsync(ur => ur.UserId == user.Id, includes: ur => ur.Role);
 
         var claims = new List<Claim>
         {
@@ -27,7 +34,10 @@ public class TokenService(IOptions<JwtSettings> jwtSettings) : ITokenService
             new Claim(JwtRegisteredClaimNames.Email, user.Email!),
             new Claim(ClaimTypes.Name, user.UserName!),
         };
-
+        foreach (var role in userRoles)
+        {
+            claims.Add(new(ClaimTypes.Role, role.Role.Name));
+        }
         var expiresAt = DateTime.UtcNow.AddMinutes(10);
         var token = new JwtSecurityToken(
             issuer: _jwtSettings.Issuer,

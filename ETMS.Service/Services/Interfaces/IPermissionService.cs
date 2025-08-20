@@ -5,15 +5,16 @@ namespace ETMS.Service.Services.Interfaces;
 
 public interface IPermissionService
 {
-    Task<Permission?> GetPermissionByNameAsync(string permissionName);
-    Task<bool> UserHasPermissionAsync(int userId, string permission);
-    Task<List<string>> GetUserPermissionsAsync(int userId);
-    Task<bool> HasPermissionAsync(int userId, int projectId, string permission);
-    Task<IEnumerable<string>> GetUserProjectPermissionsAsync(int userId, int projectId);
-    Task<IEnumerable<Permission>> GetAllPermissionsAsync();
-    Task<PermissionDto> CreatePermissionAsync(string newPermission);
-    Task<PermissionDto?> UpdatePermissionAsync(int permissionId, string newName);
-    Task<IEnumerable<PermissionDto>> UpdatePermissionsAsync(IEnumerable<PermissionDto> permissionDtos);
+    Task<IEnumerable<PermissionDto>> GetPermissionsByRoleIdAsync(int roleId);
+
     Task AssignPermissionToRoleId(int permissionId, int roleId);
-    Task TogglePermissionByRoleId(int permissionId, int roleId);
+    Task<PermissionDto> CreatePermissionAsync(string permissionName);
+    Task<IEnumerable<Permission>> GetAllPermissionsAsync();
+    Task<List<string?>> GetUserPermissionsAsync(int userId);
+    Task<IEnumerable<string?>> GetUserProjectPermissionsAsync(int userId, int projectId);
+    Task<bool> HasPermissionAsync(int userId, int projectId, string permission);
+    Task RevokePermissionFromRoleId(int permissionId, int roleId);
+    Task UpdatePermissionAsync(int permissionId, string newName);
+    Task<bool> UserHasPermissionAsync(int userId, string permission);
+    Task<Permission?> GetPermissionByNameAsync(string permissionName);
 }

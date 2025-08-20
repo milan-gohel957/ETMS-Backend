@@ -115,9 +115,13 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity, 
         return await GetNonDeletedQuery().Where(e => !e.IsDeleted).Where(predicate).ToListAsync(cancellationToken);
     }
 
-    public async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null, CancellationToken cancellationToken = default)
+    public async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null, CancellationToken cancellationToken = default, params Expression<Func<T, object>>[] includes)
     {
         var query = GetNonDeletedQuery();
+        foreach (var include in includes)
+        {
+            query = query.Include(include);
+        }
         if (orderBy != null)
         {
             query = orderBy(query);
@@ -138,7 +142,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity, 
         {
             query = query.Include(include);
         }
-        if (orderBy!= null)
+        if (orderBy != null)
         {
             query = orderBy(query);
         }

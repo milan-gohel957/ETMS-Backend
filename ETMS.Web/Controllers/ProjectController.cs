@@ -20,18 +20,18 @@ public class ProjectController(IProjectService projectService) : BaseApiControll
         return Success(projects, "Current user's projects retrieved successfully.");
     }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteProject(int id)
+    [HttpDelete("{projectId:int}")]
+    public async Task<IActionResult> DeleteProject(int projectId)
     {
-        await projectService.DeleteProjectAsync(id);
+        await projectService.DeleteProjectAsync(projectId, GetCurrentUserId());
 
         return Success<object>(null, "Project deleted successfully.");
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateProject(int id, [FromBody] UpdateProjectDto projectDto)
+    [HttpPut("{projectId:int}")]
+    public async Task<IActionResult> UpdateProject(int projectId, [FromBody] UpdateProjectDto projectDto)
     {
-        await projectService.UpdateProjectAsync(id, projectDto);
+        await projectService.UpdateProjectAsync(projectId, projectDto);
 
         return Success<object>(null, "Project updated successfully.");
     }
@@ -53,14 +53,14 @@ public class ProjectController(IProjectService projectService) : BaseApiControll
         return Success<object>(createdProjectDto, "project created successfully.");
     }
 
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetProjectById(int id)
+    [HttpGet("{projectId:int}")]
+    public async Task<IActionResult> GetProjectById(int projectId)
     {
-        var project = await projectService.GetProjectByIdAsync(id);
+        var project = await projectService.GetProjectByIdAsync(projectId, GetCurrentUserId());
 
         return Success<object>(project, "project retrived successfully.");
     }
-    
+
     private int GetCurrentUserId()
     {
         var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

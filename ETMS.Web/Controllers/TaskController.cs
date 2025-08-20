@@ -75,6 +75,13 @@ public class TaskController(ITaskService taskService) : BaseApiController
         return Success<object>(null, "Task updated successfully.");
     }
 
+    [HttpGet("{taskId:int}/members")]
+    public async Task<IActionResult> GetTaskMembers(int taskId)
+    {
+        IEnumerable<UserDto> userDtos = await taskService.GetTaskMembersAsync(taskId);
+        return Success(userDtos);
+    }
+
     private int GetCurrentUserId()
     {
         var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

@@ -12,5 +12,5 @@ public class RolePermission : BaseEntity
     public virtual Role? Role { get; set; } = null;
     public virtual Permission? Permission { get; set; }
     [Required]
-    public bool IsActive = false;
+    public bool IsActive { get; set; } = true;
 }

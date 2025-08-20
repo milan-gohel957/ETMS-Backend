@@ -4,7 +4,6 @@ namespace ETMS.Service.DTOs;
 
 public class UpdateCommentDto
 {
-    public int Id { get; set; }
     [Required(AllowEmptyStrings = false, ErrorMessage = "Comment is Required.")]
     public string CommentString { get; set; } = string.Empty;
     public int ProjectTaskId { get; set; }

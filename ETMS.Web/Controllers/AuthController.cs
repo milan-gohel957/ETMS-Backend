@@ -7,6 +7,7 @@ using ETMS.Service.DTOs;
 using ETMS.Service.Exceptions;
 using ETMS.Service.Services.Interfaces;
 using ETMS.Web.Filters;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static ETMS.Domain.Enums.Enums;
@@ -20,7 +21,7 @@ public class AuthController(IAuthService authService, IHostEnvironment hostEnvir
     [HttpPost("signup")]
     public async Task<IActionResult> SignUp([FromBody] SignUpRequestDto signUpRequestDto)
     {
-        var hostUri = $"{Request.Scheme}://{Request.Host}";
+        var hostUri = $"http://localhost:4200";
         await authService.SignUpAsync(signUpRequestDto, hostUri);
         return Success("Sign-up successful. Check your email to verify your account.");
     }
@@ -71,8 +72,57 @@ public class AuthController(IAuthService authService, IHostEnvironment hostEnvir
         var loginResponse = await authService.AuthenticateWithGoogleAsync(
             googleAuthDto
         );
-       
+
         return Success(loginResponse, "Login Successfull!");
+    }
+
+    [HttpGet("external-login")]
+    public IActionResult ExternalLogin()
+    {
+        return Challenge(
+            new AuthenticationProperties
+            {
+                RedirectUri = Url.Action(nameof(GoogleResponse))
+            }
+        );
+    }
+
+    [HttpGet("google-response")]
+    public async Task<IActionResult> GoogleResponse(string returnUrl = "/")
+    {
+        // 1. Authenticate with the external Google scheme
+        AuthenticateResult result = await HttpContext.AuthenticateAsync("Google");
+
+        if (!result.Succeeded || result.Principal == null || result.Properties == null)
+        {
+            return BadRequest(new { Message = "Google authentication failed." });
+        }
+
+        // 2. Extract the id_token and access_token from the authentication properties
+        var idToken = result.Properties.GetTokenValue("id_token");
+        var accessToken = result.Properties.GetTokenValue("access_token");
+
+        if (string.IsNullOrEmpty(idToken) || string.IsNullOrEmpty(accessToken))
+        {
+            return BadRequest(new { Message = "Could not retrieve tokens from Google." });
+        }
+
+        // 3. Now you can call your existing service method with these tokens
+        // Assuming you have a way to get the IP address if needed.
+        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+
+        var googleLoginDto = new GoogleLoginDto
+        {
+            IdToken = idToken,
+            AccessToken = accessToken,
+            IpAddress = ipAddress
+        };
+
+        // This calls the method you provided in your question
+        var loginResponse = await authService.AuthenticateWithGoogleAsync(googleLoginDto);
+
+        // 4. Return the final login response from your service
+        return Ok(loginResponse);
     }
 
     [HttpPost("login")]

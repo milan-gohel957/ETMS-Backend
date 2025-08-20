@@ -185,7 +185,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> dbConte
                 .HasForeignKey(c => c.UpdatedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            
+
         });
 
         // 6. ATTACHMENT CONFIGURATION - Similar polymorphic pattern
@@ -256,7 +256,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> dbConte
 
         // 11. Permission configuration
         modelBuilder.Entity<Permission>(entity =>
-            entity.HasIndex(e => e.Name).HasDatabaseName("IX_Permissions_Name"));
+        {
+            entity.HasIndex(e => e.Name)
+                .IsUnique()
+                .HasDatabaseName("IX_Permissions_Name");
+        });
+
+
 
         // NOW apply assembly configurations (if any)
         // Put this AFTER manual configurations to prevent overrides

@@ -111,6 +111,16 @@ public class TaskService(IUnitOfWork unitOfWork, IMapper mapper, IPermissionServ
         await unitOfWork.SaveChangesAsync();
     }
 
+    public async Task<IEnumerable<UserDto>> GetTaskMembersAsync(int taskId)
+    {
+        bool isTaskExists = await _taskRepository.ExistsAsync(taskId);
+        if (!isTaskExists)
+            throw new ResponseException(EResponse.NotFound, $"Task With {taskId} not found.");
+
+        IEnumerable<User> taskMembers = (await _userTaskRepository.GetAllWithIncludesAsync(ut => ut.ProjectTaskId == taskId, includes: ut => ut.User)).Select(ut => ut.User);
+
+        return mapper.Map<IEnumerable<UserDto>>(taskMembers);
+    }
     public async Task ShiftTaskOrderRangeAsync(ShiftTaskOrderRangeDto shiftTaskOrderRangeDto)
     {
         var tasksToShift = await _taskRepository.GetAllAsync(t => t.BoardId == shiftTaskOrderRangeDto.BoardId

@@ -81,30 +81,51 @@ public class CommentService(IUnitOfWork unitOfWork, IMapper mapper, IPermissionS
         return mentions;
     }
 
-    public async Task UpdateCommentAsync(UpdateCommentDto updateCommentDto)
+    public async Task UpdateCommentAsync(int commentId, UpdateCommentDto updateCommentDto)
     {
         //TODO: Set UserId from controller
-        ProjectTask? dbTask = await _taskRepository.GetByIdAsync(updateCommentDto.ProjectTaskId) ?? throw new ResponseException(EResponse.NotFound, $"Task With {updateCommentDto.ProjectTaskId} not found.");
+        ProjectTask? dbTask = await _taskRepository.GetByIdAsync(updateCommentDto.ProjectTaskId)
+            ?? throw new ResponseException(EResponse.NotFound, $"Task With {updateCommentDto.ProjectTaskId} not found.");
 
-        Comment? dbComment = await _commentRepository.FirstOrDefaultAsync(c => c.Id == updateCommentDto.Id && c.UserId == updateCommentDto.UserId)
-                            ?? throw new ResponseException(EResponse.Forbidden, $"User with {updateCommentDto.UserId} can not update this comment.");
+        Comment? dbComment = await _commentRepository.FirstOrDefaultAsync(
+                c => c.Id == commentId && c.UserId == updateCommentDto.UserId)
+            ?? throw new ResponseException(EResponse.Forbidden, $"User with {updateCommentDto.UserId} cannot update this comment.");
 
+        // update comment content
         mapper.Map(updateCommentDto, dbComment);
 
-        List<string> mentions = FindMentions(updateCommentDto.CommentString);
+        // find mentions in updated comment string
+        List<string> newMentions = FindMentions(updateCommentDto.CommentString);
 
-        for (int i = 0; i < mentions.Count; i++)
+        // get existing mentions from db
+        List<CommentMention> existingMentions = (await _commentMentionsRepository
+            .GetAllAsync(cm => cm.CommentId == commentId)).ToList();
+
+        // resolve new mentions -> user ids
+        List<int> newMentionUserIds = new();
+        foreach (var mention in newMentions.Distinct())
         {
-            User? user = await _userRepository.FirstOrDefaultAsync(y => y.UserName == mentions[i]);
-            if (user == null) continue;
-            CommentMention commentMention = new()
-            {
-                UserId = user.Id,
-                CommentId = updateCommentDto.Id,
-            };
-
-            await _commentMentionsRepository.AddAsync(commentMention);
+            var user = await _userRepository.FirstOrDefaultAsync(u => u.UserName == mention.Substring(1));
+            if (user != null)
+                newMentionUserIds.Add(user.Id);
         }
+
+        // find mentions to remove
+        var toRemove = existingMentions
+            .Where(em => !newMentionUserIds.Contains(em.UserId))
+            .ToList();
+
+        foreach (var rem in toRemove)
+            _commentMentionsRepository.SoftDelete(rem);
+
+        // find mentions to add
+        var existingUserIds = existingMentions.Select(em => em.UserId).ToHashSet();
+        var toAdd = newMentionUserIds
+            .Where(uid => !existingUserIds.Contains(uid))
+            .Select(uid => new CommentMention { UserId = uid, CommentId = commentId });
+
+        foreach (var add in toAdd)
+            await _commentMentionsRepository.AddAsync(add);
 
         _commentRepository.Update(dbComment);
 
@@ -122,6 +143,8 @@ public class CommentService(IUnitOfWork unitOfWork, IMapper mapper, IPermissionS
 
         await _commentRepository.SoftDeleteByIdAsync(commentId);
 
+        _commentMentionsRepository.SoftDeleteRange(await _commentMentionsRepository.GetAllAsync(cm => cm.CommentId == commentId));
+        
         await unitOfWork.SaveChangesAsync();
     }
     public async Task<IEnumerable<CommentDto>> GetCommentsByTaskId(int taskId)

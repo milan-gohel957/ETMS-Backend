@@ -4,6 +4,7 @@ using ETMS.Repository.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ETMS.Repository.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250819100201_RemovePasswordSalt")]
+    partial class RemovePasswordSalt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -431,7 +434,6 @@ namespace ETMS.Repository.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Name")
-                        .IsUnique()
                         .HasDatabaseName("IX_Permissions_Name");
 
                     b.ToTable("Permissions");
@@ -615,7 +617,7 @@ namespace ETMS.Repository.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 8, 20, 11, 3, 25, 905, DateTimeKind.Utc).AddTicks(5218),
+                            CreatedAt = new DateTime(2025, 8, 19, 10, 2, 1, 137, DateTimeKind.Utc).AddTicks(368),
                             Description = "This is Admin Role. It will have all the permissions.",
                             IsDeleted = false,
                             Name = "Admin"
@@ -623,7 +625,7 @@ namespace ETMS.Repository.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 8, 20, 11, 3, 25, 905, DateTimeKind.Utc).AddTicks(5337),
+                            CreatedAt = new DateTime(2025, 8, 19, 10, 2, 1, 137, DateTimeKind.Utc).AddTicks(477),
                             Description = "This is Program Manger Role.",
                             IsDeleted = false,
                             Name = "Program Manager"
@@ -631,7 +633,7 @@ namespace ETMS.Repository.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2025, 8, 20, 11, 3, 25, 905, DateTimeKind.Utc).AddTicks(5361),
+                            CreatedAt = new DateTime(2025, 8, 19, 10, 2, 1, 137, DateTimeKind.Utc).AddTicks(500),
                             Description = "This is Project Manger Role.",
                             IsDeleted = false,
                             Name = "Project Manager"
@@ -639,7 +641,7 @@ namespace ETMS.Repository.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2025, 8, 20, 11, 3, 25, 905, DateTimeKind.Utc).AddTicks(5381),
+                            CreatedAt = new DateTime(2025, 8, 19, 10, 2, 1, 137, DateTimeKind.Utc).AddTicks(519),
                             Description = "This is Team Lead Role.",
                             IsDeleted = false,
                             Name = "Team Lead"
@@ -647,7 +649,7 @@ namespace ETMS.Repository.Migrations
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(2025, 8, 20, 11, 3, 25, 905, DateTimeKind.Utc).AddTicks(5400),
+                            CreatedAt = new DateTime(2025, 8, 19, 10, 2, 1, 137, DateTimeKind.Utc).AddTicks(537),
                             Description = "This is Senior Developer Role.",
                             IsDeleted = false,
                             Name = "Senior Developer"
@@ -655,7 +657,7 @@ namespace ETMS.Repository.Migrations
                         new
                         {
                             Id = 6,
-                            CreatedAt = new DateTime(2025, 8, 20, 11, 3, 25, 905, DateTimeKind.Utc).AddTicks(5420),
+                            CreatedAt = new DateTime(2025, 8, 19, 10, 2, 1, 137, DateTimeKind.Utc).AddTicks(555),
                             Description = "This is Junior Developer Role.",
                             IsDeleted = false,
                             Name = "Junior Developer"
@@ -663,7 +665,7 @@ namespace ETMS.Repository.Migrations
                         new
                         {
                             Id = 7,
-                            CreatedAt = new DateTime(2025, 8, 20, 11, 3, 25, 905, DateTimeKind.Utc).AddTicks(5439),
+                            CreatedAt = new DateTime(2025, 8, 19, 10, 2, 1, 137, DateTimeKind.Utc).AddTicks(576),
                             Description = "This is default User Role.",
                             IsDeleted = false,
                             Name = "User"
@@ -680,9 +682,6 @@ namespace ETMS.Repository.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -742,7 +741,7 @@ namespace ETMS.Repository.Migrations
                         {
                             Id = 1,
                             ColorCode = "",
-                            CreatedAt = new DateTime(2025, 8, 20, 11, 3, 25, 905, DateTimeKind.Utc).AddTicks(5045),
+                            CreatedAt = new DateTime(2025, 8, 19, 10, 2, 1, 137, DateTimeKind.Utc).AddTicks(208),
                             IsDeleted = false,
                             Name = "Pending"
                         },
@@ -750,7 +749,7 @@ namespace ETMS.Repository.Migrations
                         {
                             Id = 2,
                             ColorCode = "",
-                            CreatedAt = new DateTime(2025, 8, 20, 11, 3, 25, 905, DateTimeKind.Utc).AddTicks(5050),
+                            CreatedAt = new DateTime(2025, 8, 19, 10, 2, 1, 137, DateTimeKind.Utc).AddTicks(212),
                             IsDeleted = false,
                             Name = "Completed"
                         });

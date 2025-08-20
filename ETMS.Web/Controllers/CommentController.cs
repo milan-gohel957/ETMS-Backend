@@ -29,10 +29,10 @@ public class CommentController(ICommentService commentService) : BaseApiControll
     }
 
     [HttpPut("{commentId:int}")]
-    public async Task<IActionResult> UpdateCommentAsync(UpdateCommentDto updateCommentDto)
+    public async Task<IActionResult> UpdateCommentAsync(int commentId, UpdateCommentDto updateCommentDto)
     {
         updateCommentDto.UserId = GetCurrentUserId();
-        await commentService.UpdateCommentAsync(updateCommentDto);
+        await commentService.UpdateCommentAsync(commentId, updateCommentDto);
         return Success("Comment Updated SuccessFully!");
     }
 
